@@ -25,14 +25,14 @@ export default [
     routes: [
       //  new
       {
-        name: '如糖用户',
+        name: '数据',
         icon: 'profile',
-        path: '/rutang',
+        path: '/stats',
         routes: [
           {
-            path: '/rutang/admin',
-            name: '用户列表',
-            component: './RutangUser/RutangUser',
+            path: '/stats/data',
+            name: '数据统计（新）',
+            component: './Stats/Stats',
           }
         ],
       },

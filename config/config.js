@@ -59,10 +59,21 @@ if (ANT_DESIGN_PRO_ONLY_DO_NOT_USE_IN_YOUR_PRODUCTION === 'site') {
   ]);
 }
 
+const JOJOTOO_API = (url => {
+  switch(url) {
+    case "PROD":
+      return "https://admin.jojotu.cn";
+    case "BETA":
+    default:
+      return "https://admin.beta.jojotu.cn";
+  }
+})(process.env.JOJOTOO_API);
+
 export default {
   // add for transfer to umi
   plugins,
   define: {
+    API_URL: JOJOTOO_API || "",
     ANT_DESIGN_PRO_ONLY_DO_NOT_USE_IN_YOUR_PRODUCTION:
       ANT_DESIGN_PRO_ONLY_DO_NOT_USE_IN_YOUR_PRODUCTION || '', // preview.pro.ant.design only do not use in your production ; preview.pro.ant.design 专用环境变量，请不要在你的项目中使用它。
   },

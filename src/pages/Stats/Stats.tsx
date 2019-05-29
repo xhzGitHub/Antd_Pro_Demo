@@ -4,35 +4,50 @@ import {
   Button,
   Dropdown,
   Icon,
-  Menu
+  Menu,
+  Skeleton,
+  Row,
+  Col,
+  Card
 } from 'antd'
+import { getSchemas } from '@/services/stats'
+// import request from '@/utils/request'
+const initialState = {
+  loading: true,
+  schemas: []
+};
+// type State = typeof initialState
 
 export default class Stats extends PureComponent {
+  state = initialState
 
-  componentDidMount() {
-    console.log('here is Rutang User')
+  async componentDidMount() {
+    // const schemas = await request('/api/data/schemas');
+    const schemas = await getSchemas();
+    this.setState({
+      loading: false,
+      schemas
+    })
+    console.log(this.state.schemas)
   }
 
   render() {
-    const menu = (
-      <Menu>
-        <Menu.Item key="1">1st item</Menu.Item>
-        <Menu.Item key="2">2nd item</Menu.Item>
-        <Menu.Item key="3">3rd item</Menu.Item>
-      </Menu>
-    )
-
+    const { loading, schemas } = this.state
     return (
-      <div>
-        <h1>Rutang User</h1>
-        <Dropdown overlay={menu}>
-          <Button>
-            Actions <Icon type="down" />
-          </Button>
-        </Dropdown>
-        <Button type="dashed" icon="android">干我啊</Button>
-        <UserList name='xhz' />
-      </div>
+      <Row type="flex">
+        <Skeleton loading={loading} active>
+          {schemas.map(schema => (
+            <Col span={4}>
+              <Card
+                hoverable
+                onClick={() => console.log(schema.title)}
+              >
+                {schema.title}
+              </Card>
+            </Col>
+          ))}
+        </Skeleton>
+      </Row>
     );
   }
 }

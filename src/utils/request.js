@@ -11,7 +11,6 @@ const checkHttpStatus = (response, showNotification) => {
     // return redirectLogin();
   }
   if (response.ok) {
-    console.log('res: ', response);
     return response;
   }
   if (showNotification) {
@@ -138,17 +137,14 @@ export default function request(url, options) {
     .then(response => {
       const contentType = response.headers.get("Content-Type");
       if (contentType.indexOf("image") >= 0) {
-        console.log('resImage: ',response);
         return response.blob();
       } else if (contentType.indexOf("json") >= 0) {
         return response.json();
       } else {
-        console.log('res2: ',response);
         return response;
       }
     })
     .then(apiResponse => {
-      console.log('apiResponse', apiResponse);
       return Promise.resolve(
         checkApiStatusAndExtractData(
           apiResponse,

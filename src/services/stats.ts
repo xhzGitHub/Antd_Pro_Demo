@@ -7,3 +7,7 @@ export default function testing() {
 export function getSchemas() {
   return request(`/api/data/schemas`);
 }
+
+export function getBargainOverview() {
+  return request(`/api/data/bargain-overview`);
+}

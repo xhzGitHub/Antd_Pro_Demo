@@ -33,6 +33,11 @@ export default [
             path: '/stats/data',
             name: '数据统计（新）',
             component: './Stats/Stats',
+          },
+          {
+            path: '/stats/bargain-overview',
+            name: '砍价大盘',
+            component: './Stats/BargainOverview',
           }
         ],
       },

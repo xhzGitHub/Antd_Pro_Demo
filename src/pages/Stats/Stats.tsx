@@ -17,7 +17,6 @@ export default function Stats() {
       setLoading(false);
       setSchemas(schemas);
     })();
-    console.log(1);
   }, []);
 
   return (

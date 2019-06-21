@@ -1,7 +1,8 @@
-import request from '@/utils/request'
+import request from '@/utils/request';
+import { withQuery } from './helpers';
 
 export default function testing() {
-  return 'testing is successful'
+  return 'testing is successful';
 }
 
 export function getSchemas() {
@@ -10,4 +11,8 @@ export function getSchemas() {
 
 export function getBargainOverview() {
   return request(`/api/data/bargain-overview`);
+}
+
+export function getBargainFunnel(query?: any) {
+  return request(withQuery(`/api/bargain-funnel`, query));
 }

@@ -38,7 +38,12 @@ export default [
             path: '/stats/bargain-overview',
             name: '砍价大盘',
             component: './Stats/BargainOverview',
-          }
+          },
+          {
+            path: '/stats/bargain-funnel',
+            name: '砍价大盘漏斗',
+            component: './Stats/BargainFunnel',
+          },
         ],
       },
       // dashboard

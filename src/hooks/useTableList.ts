@@ -2,7 +2,8 @@ import { useState, useCallback, useEffect } from 'react';
 import { Pagination } from 'antd';
 import { PaginationProps, PaginationConfig } from 'antd/lib/pagination';
 import { ColumnProps, TableStateFilters } from 'antd/lib/table';
-import { object } from 'prop-types';
+import { func } from 'prop-types';
+import { query } from '@/services/user';
 
 interface UseTableListOptions {
   fetchData: () => void;
@@ -14,8 +15,8 @@ interface ReturnValue<T> {
     dataSource: T[];
     // pagination: PaginationProps;
   };
-  // getFilter: (field: string) => any | any[];
-  // setFilters: (filters: { [key: string]: any | any[] }) => void;
+  getFilter: (field: string) => any | any[];
+  setFilters: (filters: { [key: string]: any | any[] }) => void;
   getColumns: (columns: Array<ExportColumnProps<T>>) => Array<ExportColumnProps<T>>;
   // refreshList: () => void;
 }
@@ -34,7 +35,6 @@ interface State<T> {
 
 export default function useTableList<T = any>(options: UseTableListOptions): ReturnValue<T> {
   const getStateFromLocation = useCallback(() => {
-    const page: number = 1;
     const filters = {};
 
     return {
@@ -53,8 +53,31 @@ export default function useTableList<T = any>(options: UseTableListOptions): Ret
     }
   }, [state.loading]);
 
+  function yieldQueryFromState() {
+    const { filters } = state;
+    let query: any = {};
+    if (objectCantainsValue(filters)) {
+      const filtersPayload: any = {};
+
+      Object.keys(filters).forEach(key => {
+        const filter = filters[key];
+        if (Array.isArray(filter)) {
+          if (filter.length > 1) {
+            filtersPayload[key] = filter.join(',');
+          } else {
+            filtersPayload[key] = filter[0];
+          }
+        }
+      });
+      query = { ...query, ...filtersPayload };
+    }
+    return query;
+  }
+
   async function fetchData() {
-    const res = await options.fetchData();
+    const query = yieldQueryFromState();
+
+    const res = await options.fetchData(query);
     const newState = { ...state, loading: false };
     if (res) {
       newState.dataSource = res.data;
@@ -66,11 +89,32 @@ export default function useTableList<T = any>(options: UseTableListOptions): Ret
 
   function getColumns(columns: Array<ExportColumnProps<T>>) {
     return columns.map(column => {
-      // 	const hasFilters = objectContainsValue(state.filters);
       let mapedColumn: ExportColumnProps<T> = column;
       return mapedColumn;
     });
   }
+
+  const setFilters: ReturnValue<T>['setFilters'] = filters => {
+    const filtersResult = {};
+    Object.keys(filters).forEach(key => {
+      filtersResult[key] = [filters[key]];
+    });
+    setState({
+      ...state,
+      loading: true,
+      filters: { ...state.filters, ...filtersResult },
+    });
+  };
+
+  const getFilter: ReturnValue<T>['getFilter'] = field => {
+    if (state.filters[field]) {
+      if (state.filters[field].length > 1) {
+        return state.filters[field];
+      }
+      return state.filters[field][0];
+    }
+    return undefined;
+  };
 
   return {
     tableProps: {
@@ -78,5 +122,14 @@ export default function useTableList<T = any>(options: UseTableListOptions): Ret
       dataSource: state.dataSource,
     },
     getColumns,
+    setFilters,
+    getFilter,
   };
+}
+
+function objectCantainsValue(obj: any) {
+  if (typeof obj === 'object' && !Array.isArray(obj)) {
+    return Object.keys(obj).length > 0;
+  }
+  throw Error(`param obj is not of type object! \n Type: ${typeof obj} \n Value: ${obj}`);
 }

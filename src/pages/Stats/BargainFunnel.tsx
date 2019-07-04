@@ -1,4 +1,12 @@
-import React, { useState, useEffect, useMemo, useCallback, Fragment } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+  createRef,
+  Fragment,
+} from 'react';
 import { Card, Button, Select, Table, DatePicker, Skeleton } from 'antd';
 
 import { getBargainFunnel } from '@/services/stats';
@@ -12,6 +20,7 @@ const { RangePicker } = DatePicker;
 let initData = true;
 
 export default function BargainFunnel() {
+  const tableRef = useRef<React.Ref<Table<any>>>(createRef());
   const columns = useMemo<Array<ExportColumnProps<any>>>(
     () => [
       {
@@ -56,7 +65,7 @@ export default function BargainFunnel() {
   const [exporting, setExporting] = useState(false);
 
   useDocumentTitle('砍价大盘漏斗');
-  const { tableProps, getColumns } = useTableList({
+  const { tableProps, getColumns, setFilters, getFilter } = useTableList({
     fetchData: getBargainFunnel,
   });
 
@@ -64,7 +73,7 @@ export default function BargainFunnel() {
     setIsLoading(true);
     (async () => {
       initData = false;
-      setColumnData(columns);
+      // setColumnData(columns);
       setIsLoading(false);
     })();
   }, []);
@@ -86,26 +95,30 @@ export default function BargainFunnel() {
     setIsLoading(false);
   }
 
-  async function handleSelectChange(e) {
-    const query = { type: e };
-    setIsLoading(true);
-    const res = await getBargainFunnel(query);
-    setDataSource(res.data);
-    setIsLoading(false);
-  }
+  // async function handleSelectChange(e) {
+  //   const query = { type: e };
+  //   setIsLoading(true);
+  //   const res = await getBargainFunnel(query);
+  //   setDataSource(res.data);
+  //   setIsLoading(false);
+  // }
 
   const renderTableTitle = useCallback(
     () => (
       <div>
         <RangePicker style={{ padding: '0 20px 25px 0' }} onChange={handleDateChange} />
-        {/* <Select defaultValue="UV" onChange={type => setFilters(type)}> */}
-        <Select defaultValue="UV" onChange={handleSelectChange}>
+        <Select
+          style={{ width: 70 }}
+          defaultValue="UV"
+          onChange={type => setFilters({ type })}
+          value={getFilter('type') || 'UV'}
+        >
           <Select.Option value="uv">UV</Select.Option>
           <Select.Option value="pv">PV</Select.Option>
         </Select>
       </div>
     ),
-    []
+    [getFilter]
   );
 
   return (

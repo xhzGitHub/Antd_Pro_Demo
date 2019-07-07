@@ -8,19 +8,18 @@ import React, {
   Fragment,
 } from 'react';
 import { Card, Button, Select, Table, DatePicker, Skeleton } from 'antd';
-
 import { getBargainFunnel } from '@/services/stats';
 import downloadCSV from '@/components/ExportTableDataModal/utils';
 import useDocumentTitle from '@/hooks/useDocumentTitle';
 import useTableList, { ExportColumnProps } from '@/hooks/useTableList';
 import { CLIENTS } from './constants';
-// import { func } from 'prop-types';
+import moment from 'moment';
 
 const { RangePicker } = DatePicker;
 let initData = true;
+const DATA_FORMAT = 'YYYY-MM-DD';
 
 export default function BargainFunnel() {
-  const tableRef = useRef<React.Ref<Table<any>>>(createRef());
   const columns = useMemo<Array<ExportColumnProps<any>>>(
     () => [
       {
@@ -61,7 +60,6 @@ export default function BargainFunnel() {
   );
   const [columnData, setColumnData] = useState(columns);
   const [dataSource, setDataSource] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
 
   useDocumentTitle('砍价大盘漏斗');
@@ -69,14 +67,9 @@ export default function BargainFunnel() {
     fetchData: getBargainFunnel,
   });
 
-  useEffect(() => {
-    setIsLoading(true);
-    (async () => {
-      initData = false;
-      // setColumnData(columns);
-      setIsLoading(false);
-    })();
-  }, []);
+  const startAt = getFilter('start_at');
+  const endAt = getFilter('end_at');
+  const range: any = startAt && endAt ? [moment(startAt), moment(endAt)] : [];
 
   function handleExport() {
     setExporting(true);
@@ -84,29 +77,17 @@ export default function BargainFunnel() {
     setExporting(false);
   }
 
-  async function handleDateChange(_, dataString) {
-    const [start_at, end_at] = dataString;
-    const query = { start_at, end_at };
-    setIsLoading(true);
-    const res = await getBargainFunnel(query);
-    if (res) {
-      setDataSource(res.data);
-    }
-    setIsLoading(false);
-  }
-
-  // async function handleSelectChange(e) {
-  //   const query = { type: e };
-  //   setIsLoading(true);
-  //   const res = await getBargainFunnel(query);
-  //   setDataSource(res.data);
-  //   setIsLoading(false);
-  // }
-
   const renderTableTitle = useCallback(
     () => (
       <div>
-        <RangePicker style={{ padding: '0 20px 25px 0' }} onChange={handleDateChange} />
+        <RangePicker
+          format={DATA_FORMAT}
+          style={{ padding: '0 20px 25px 0' }}
+          value={range}
+          onChange={(_, dataString) => {
+            setFilters({ start_at: dataString[0], end_at: dataString[1] });
+          }}
+        />
         <Select
           style={{ width: 70 }}
           defaultValue="UV"
@@ -130,18 +111,13 @@ export default function BargainFunnel() {
         </Button>
       }
     >
-      {isLoading && initData ? (
-        <Skeleton loading={isLoading} active />
-      ) : (
-        <Fragment>
-          <Table
-            scroll={{ x: true }}
-            columns={getColumns(columnData)}
-            title={renderTableTitle}
-            {...tableProps}
-          />
-        </Fragment>
-      )}
+      <Table
+        scroll={{ x: true }}
+        rowKey={(_, index) => index.toString()}
+        columns={getColumns(columnData)}
+        title={renderTableTitle}
+        {...tableProps}
+      />
     </Card>
   );
 }

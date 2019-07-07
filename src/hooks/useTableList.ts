@@ -1,12 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Pagination } from 'antd';
-import { PaginationProps, PaginationConfig } from 'antd/lib/pagination';
 import { ColumnProps, TableStateFilters } from 'antd/lib/table';
-import { func } from 'prop-types';
-import { query } from '@/services/user';
 
 interface UseTableListOptions {
-  fetchData: () => void;
+  fetchData: (query: any) => void;
 }
 
 interface ReturnValue<T> {
@@ -56,6 +52,7 @@ export default function useTableList<T = any>(options: UseTableListOptions): Ret
   function yieldQueryFromState() {
     const { filters } = state;
     let query: any = {};
+
     if (objectCantainsValue(filters)) {
       const filtersPayload: any = {};
 
@@ -104,6 +101,7 @@ export default function useTableList<T = any>(options: UseTableListOptions): Ret
       loading: true,
       filters: { ...state.filters, ...filtersResult },
     });
+    console.log('setFilter:', state);
   };
 
   const getFilter: ReturnValue<T>['getFilter'] = field => {
@@ -113,6 +111,7 @@ export default function useTableList<T = any>(options: UseTableListOptions): Ret
       }
       return state.filters[field][0];
     }
+    console.log('getFilter: ', state);
     return undefined;
   };
 

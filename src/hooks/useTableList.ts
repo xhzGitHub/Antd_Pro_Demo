@@ -27,16 +27,19 @@ interface State<T> {
   loading: boolean;
   dataSource: T[];
   filters: TableStateFilters;
+  // search: string;
 }
 
 export default function useTableList<T = any>(options: UseTableListOptions): ReturnValue<T> {
   const getStateFromLocation = useCallback(() => {
     const filters = {};
+    const search = '';
 
     return {
       loading: true,
       dataSource: [],
       filters,
+      // search
     };
   }, [undefined]);
   const [state, setState] = useState(getStateFromLocation() as State<T>);

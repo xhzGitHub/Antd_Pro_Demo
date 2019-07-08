@@ -62,6 +62,19 @@ export default [
             name: '用户列表',
             component: './Account/UserList',
           },
+          {
+            path: '/account/user/:id',
+            name: '用户详情',
+            component: './Account/UserDetail',
+            hideInMenu: true,
+            routes: [
+              {
+                id: 'user-detail',
+                path: '/account/user/:id/subjecys',
+                // component: "./Account/"
+              },
+            ],
+          },
         ],
       },
       // dashboard

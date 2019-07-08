@@ -1,60 +1,53 @@
 import React, { useState, useEffect, useMemo, Fragment } from 'react';
-import { Card, Button, Checkbox, Input, Table } from 'antd';
+import { Card, Input, Row, Col, Avatar } from 'antd';
 import Link from 'umi/link';
 import useDocumentTitle from '@/hooks/useDocumentTitle';
 // import useTableList, { ExportColumnProps } from '@/hooks/useTableList';
-import useTableListV2 from '@/hooks/userTableListV2';
-import { getUserList } from '@/services/user';
+import { getUserInfo } from '@/services/user';
+import user from '@/models/user';
 
 const { Search } = Input;
 
-export default function UserList() {
-  useDocumentTitle('用户列表');
-  const { tableProps, setFilters, getFilter } = useTableListV2({
-    service: getUserList,
-  });
+interface State {
+  user_avt: string;
+}
 
-  const columns = useMemo<Array<ExportColumnProps<any>>>(
-    () => [
-      {
-        title: '用户ID',
-        dataIndex: 'id',
-        render: id => <Link to="">{id}</Link>,
-      },
-      {
-        title: '用户名',
-        dataIndex: 'name',
-      },
-      {
-        title: '性别',
-        dataIndex: 'gender',
-        render: value => (Number(value) === 1 ? '男' : '女'),
-      },
-      {
-        title: '手机号',
-        dataIndex: 'tel',
-      },
-      {
-        title: '用户等级',
-        dataIndex: 'bg_level',
-      },
-      {
-        title: '城市',
-        dataIndex: 'city',
-      },
-      {
-        title: '注册时间',
-        dataIndex: 'created_at',
-      },
-    ],
-    []
-  );
+const initState: State = {
+  user_avt: '' as string,
+};
 
-  const [columnData, setColumnData] = useState(columns);
+export default function UserList(props) {
+  useDocumentTitle('用户详情');
+  const [state, setState] = useState(initState);
+  const { id } = props.match.params;
+
+  async function fetchData() {
+    const res = await getUserInfo(id);
+    if (res) {
+      setState({
+        ...state,
+        user_avt: res.avt,
+      });
+    }
+    console.log('res:', res);
+  }
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   return (
-    <Card title="用户列表">
-      <Table columns={columnData} {...tableProps} />
-    </Card>
+    <Row gutter={24}>
+      <Col span={10}>
+        <Card>
+          <div style={{ textAlign: 'center' }}>
+            <Avatar size="large" src={state.user_avt} />
+          </div>
+        </Card>
+      </Col>
+      <Col span={14}>
+        <Card>dsb</Card>
+      </Col>
+    </Row>
   );
 }

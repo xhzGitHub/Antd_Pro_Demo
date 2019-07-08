@@ -22,7 +22,7 @@ export default function UserList() {
         dataIndex: 'id',
         render: id => (
           <span>
-            <Link to={getUrl('user-detail', id)}>{id}</Link>
+            <Link to={getUrl('user-datail', id)}>{id}</Link>
           </span>
         ),
       },

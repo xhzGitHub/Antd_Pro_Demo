@@ -70,8 +70,13 @@ export default [
             routes: [
               {
                 id: 'user-detail',
-                path: '/account/user/:id/subjecys',
-                // component: "./Account/"
+                path: '/account/user/:id/subjects',
+                component: './Account/partials/UserSubjectList',
+              },
+              {
+                id: 'user-detail-subjects',
+                path: '/account/user/:id/subjects',
+                component: './Account/partials/UserSubjectList',
               },
             ],
           },

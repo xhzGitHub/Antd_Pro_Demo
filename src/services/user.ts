@@ -12,3 +12,7 @@ export async function queryCurrent() {
 export function getUserList(query?: any) {
   return request(withQuery(`/api/user-list`, query));
 }
+
+export function getUserInfo(user_id) {
+  return request(`/api/user/${user_id}`);
+}

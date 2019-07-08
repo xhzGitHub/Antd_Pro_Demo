@@ -16,7 +16,7 @@ const { Search } = Input;
 
 export default function UserList() {
   useDocumentTitle("用户列表");
-  const { tableProps } = useTableListV2({
+  const { tableProps, setFilters, getFilter } = useTableListV2({
     service: getUserList
   });
 
@@ -60,11 +60,16 @@ export default function UserList() {
 
   const extraContent = (
     <Fragment>
-      <Checkbox>分时特权用户</Checkbox>
+      <Checkbox onChange={(e) => {
+        const isPrivileged = e.target.checked;
+        setFilters("is_privileged", isPrivileged ? 0 : 1);
+      }}>
+        分时特权用户
+      </Checkbox>
       <Checkbox>高颜值博主</Checkbox>
       <Button type="primary" style={{ marginLeft: '20px' }}>导出用户信息</Button>
       <Button type="primary" style={{ marginLeft: '20px' }}>导出金币记录</Button>
-      <Search 
+      <Search
         placeholder="搜索"
         style={{ width: "270px", marginLeft: "20px" }}
       />

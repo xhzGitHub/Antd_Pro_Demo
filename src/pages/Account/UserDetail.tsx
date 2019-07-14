@@ -1,19 +1,18 @@
-import React, { useState, useEffect, useMemo, Fragment } from 'react';
-import { Card, Input, Row, Col, Avatar, Divider, Button, Spin } from 'antd';
+import React, { useState, useEffect, useMemo, Fragment, ReactText, ReactElement } from 'react';
+import { Card, Row, Col, Avatar, Divider, Spin, Switch, Tooltip, Icon } from 'antd';
 import Link from 'umi/link';
 import useDocumentTitle from '@/hooks/useDocumentTitle';
 // import useTableList, { ExportColumnProps } from '@/hooks/useTableList';
-import { getUserInfo } from '@/services/user';
-import { get, throttle } from 'lodash';
-import { useFetchData } from '@/hooks/useFetchData';
+import { getUserInfo, updateUserInfo } from '@/services/user';
+import { get } from 'lodash';
 
-const { Search } = Input;
 interface OneColumnItemProp {
   item: ColumnItem;
 }
 interface ColumnItem {
-  label: string;
+  label: React.ReactNode;
   value: string | number;
+  render?: () => ReactText | ReactElement<any>;
 }
 
 interface TwoColumnItemProp {
@@ -22,20 +21,40 @@ interface TwoColumnItemProp {
 
 export default function UserList(props) {
   useDocumentTitle('用户详情');
-
+  const [userInfo, setUserInfo] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const { id } = props.match.params;
-  const [data, isLoading] = useFetchData(getUserInfo, id, []);
+  const fetchData = async (service, query) => {
+    try {
+      const response = await service(query);
+      setIsLoading(false);
+      return response;
+    } catch (error) {
+      setIsLoading(false);
+      console.log('fetch data fail: ', error);
+    }
+    return null;
+  };
 
-  const userInfo = data;
+  useEffect(() => {
+    fetchData(getUserInfo, id).then(res => setUserInfo(res));
+  }, []);
 
   useDocumentTitle(userInfo && Object.keys(userInfo) ? userInfo.name : '个人详情页');
+
+  const handleUpdateUserInfo = (field, value) => {
+    fetchData(updateUserInfo, {
+      user_id: id,
+      payload: { [field]: value },
+    }).then(res => setUserInfo(res));
+  };
 
   const OneColumnItem = ({ item }: OneColumnItemProp) => (
     <Row style={{ paddingTop: '15px' }}>
       <Col span={12} style={{ fontWeight: 'bold' }}>
         {item.label}
       </Col>
-      <Col span={12}>{item.value}</Col>
+      <Col span={12}>{item.render ? item.render() : item.value}</Col>
     </Row>
   );
 
@@ -111,6 +130,46 @@ export default function UserList(props) {
                     { label: '推荐', value: userInfo.feature_count },
                     { label: '收录', value: userInfo.official_bookmark_count },
                   ]}
+                />
+                <Divider dashed />
+                <OneColumnItem
+                  item={{
+                    label: '颜值高',
+                    value: userInfo.is_good_looking,
+                    render: () => (
+                      <Switch
+                        checkedChildren="高"
+                        unCheckedChildren="普通"
+                        checked={Boolean(userInfo.is_good_looking)}
+                        onChange={() =>
+                          handleUpdateUserInfo('is_good_looking', userInfo.is_good_looking ? 0 : 1)
+                        }
+                      />
+                    ),
+                  }}
+                />
+                <OneColumnItem
+                  item={{
+                    label: (
+                      <div>
+                        分时特权用户&nbsp;
+                        <Tooltip title="佣金全返，客户端显示不含佣金的折扣。">
+                          <Icon type="exclamation-circle" theme="twoTone" />
+                        </Tooltip>
+                      </div>
+                    ),
+                    value: userInfo.is_privileged,
+                    render: () => (
+                      <Switch
+                        checkedChildren="是"
+                        unCheckedChildren="否"
+                        checked={Boolean(userInfo.is_privileged)}
+                        onChange={() =>
+                          handleUpdateUserInfo('is_privileged', userInfo.is_privileged ? 0 : 1)
+                        }
+                      />
+                    ),
+                  }}
                 />
               </div>
             ) : null}

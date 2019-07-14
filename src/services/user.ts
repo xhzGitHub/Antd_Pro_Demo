@@ -16,3 +16,10 @@ export function getUserList(query?: any) {
 export function getUserInfo(user_id) {
   return request(`/api/user/${user_id}`);
 }
+
+export function updateUserInfo({ user_id, payload }) {
+  return request(`/api/user/${user_id}`, {
+    method: 'POST',
+    body: payload,
+  });
+}

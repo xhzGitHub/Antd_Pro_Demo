@@ -1,21 +1,8 @@
 import React, { useState, useEffect, useMemo, Fragment, ReactText, ReactElement } from 'react';
-import {
-  Card,
-  Row,
-  Col,
-  Avatar,
-  Divider,
-  Spin,
-  Switch,
-  Tooltip,
-  Icon,
-  Radio,
-  Form,
-  Input,
-  Button
-} from 'antd';
+import { Card, Row, Col, Avatar, Divider, Spin, Switch, Tooltip, Icon, Radio } from 'antd';
 import useDocumentTitle from '@/hooks/useDocumentTitle';
 import { getUserInfo, updateUserInfo } from '@/services/user';
+import RewardUserPointForm from './partials/RewardUserPointForm';
 import { get } from 'lodash';
 
 interface OneColumnItemProp {
@@ -30,15 +17,11 @@ interface TwoColumnItemProp {
   items: ColumnItem[];
 }
 
-const formItemLayout = {
-  labelCol: { span: 6 },
-  wrapperCol: { span: 18 }
-}
-
 export default function UserDetail(props) {
   useDocumentTitle('用户详情');
   const [userInfo, setUserInfo] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [pointMode, setPointMode] = useState('increase');
   const { id } = props.match.params;
 
   const fetchData = async (service, query) => {
@@ -58,10 +41,6 @@ export default function UserDetail(props) {
   }, []);
 
   useDocumentTitle(userInfo && Object.keys(userInfo) ? userInfo.name : '个人详情页');
-
-  const handleSubmit = () => {
-    // do sth
-  };
 
   const handleUpdateUserInfo = (field, value) => {
     fetchData(updateUserInfo, {
@@ -194,25 +173,15 @@ export default function UserDetail(props) {
                 />
                 <Divider dashed />
                 <Fragment>
-                  <Form {...formItemLayout} onSubmit={handleSubmit}>
-                    <Form.Item wrapperCol={{ offset: 6 }}>
-                      <Radio.Group>
-                        <Radio>赠金币</Radio>
-                        <Radio>扣金币</Radio>
-                      </Radio.Group>
-                    </Form.Item>
-                    <Form.Item label="数量 (+)">
-                      <Input />
-                    </Form.Item>
-                    <Form.Item label="原因">
-                      <Input />
-                    </Form.Item>
-                    <Form.Item wrapperCol={{ offset: 6 }}>
-                      <Button type="primary">
-                        赠金币
-                      </Button>
-                    </Form.Item>
-                  </Form>
+                  <Radio.Group
+                    style={{ margin: '0 0 20px 100px' }}
+                    value={pointMode}
+                    onChange={e => setPointMode(e.target.value)}
+                  >
+                    <Radio value="increase">赠金币</Radio>
+                    <Radio value="decrease">扣金币</Radio>
+                  </Radio.Group>
+                  <RewardUserPointForm pointMode={pointMode} id={id} />
                 </Fragment>
               </div>
             ) : null}

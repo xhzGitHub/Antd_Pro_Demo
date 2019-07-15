@@ -23,3 +23,10 @@ export function updateUserInfo({ user_id, payload }) {
     body: payload,
   });
 }
+
+export function rewardPointToUser({ user_id, payload }) {
+  return request(`/api/user-point/${user_id}`, {
+    method: 'POST',
+    body: payload,
+  });
+}

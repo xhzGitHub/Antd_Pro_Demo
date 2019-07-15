@@ -1,8 +1,20 @@
 import React, { useState, useEffect, useMemo, Fragment, ReactText, ReactElement } from 'react';
-import { Card, Row, Col, Avatar, Divider, Spin, Switch, Tooltip, Icon } from 'antd';
-import Link from 'umi/link';
+import {
+  Card,
+  Row,
+  Col,
+  Avatar,
+  Divider,
+  Spin,
+  Switch,
+  Tooltip,
+  Icon,
+  Radio,
+  Form,
+  Input,
+  Button
+} from 'antd';
 import useDocumentTitle from '@/hooks/useDocumentTitle';
-// import useTableList, { ExportColumnProps } from '@/hooks/useTableList';
 import { getUserInfo, updateUserInfo } from '@/services/user';
 import { get } from 'lodash';
 
@@ -14,16 +26,21 @@ interface ColumnItem {
   value: string | number;
   render?: () => ReactText | ReactElement<any>;
 }
-
 interface TwoColumnItemProp {
   items: ColumnItem[];
 }
 
-export default function UserList(props) {
+const formItemLayout = {
+  labelCol: { span: 6 },
+  wrapperCol: { span: 18 }
+}
+
+export default function UserDetail(props) {
   useDocumentTitle('用户详情');
   const [userInfo, setUserInfo] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { id } = props.match.params;
+
   const fetchData = async (service, query) => {
     try {
       const response = await service(query);
@@ -41,6 +58,10 @@ export default function UserList(props) {
   }, []);
 
   useDocumentTitle(userInfo && Object.keys(userInfo) ? userInfo.name : '个人详情页');
+
+  const handleSubmit = () => {
+    // do sth
+  };
 
   const handleUpdateUserInfo = (field, value) => {
     fetchData(updateUserInfo, {
@@ -171,6 +192,28 @@ export default function UserList(props) {
                     ),
                   }}
                 />
+                <Divider dashed />
+                <Fragment>
+                  <Form {...formItemLayout} onSubmit={handleSubmit}>
+                    <Form.Item wrapperCol={{ offset: 6 }}>
+                      <Radio.Group>
+                        <Radio>赠金币</Radio>
+                        <Radio>扣金币</Radio>
+                      </Radio.Group>
+                    </Form.Item>
+                    <Form.Item label="数量 (+)">
+                      <Input />
+                    </Form.Item>
+                    <Form.Item label="原因">
+                      <Input />
+                    </Form.Item>
+                    <Form.Item wrapperCol={{ offset: 6 }}>
+                      <Button type="primary">
+                        赠金币
+                      </Button>
+                    </Form.Item>
+                  </Form>
+                </Fragment>
               </div>
             ) : null}
           </Card>

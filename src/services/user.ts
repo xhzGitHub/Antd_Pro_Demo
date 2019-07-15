@@ -30,3 +30,17 @@ export function rewardPointToUser({ user_id, payload }) {
     body: payload,
   });
 }
+
+export function getSheildTypes() {
+  return request(`/api/shield-user-function/list`)
+    .then(types => {
+      let typeArray = [];
+      for (const key of Object.keys(types)) {
+        typeArray.push({
+          id: types[key],
+          name: key
+        });
+      }
+      return typeArray;
+    });
+}

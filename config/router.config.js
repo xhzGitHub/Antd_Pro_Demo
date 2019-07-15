@@ -80,6 +80,11 @@ export default [
               },
             ],
           },
+          {
+            path: '/account/shieled-users',
+            name: '屏蔽用户',
+            component: './Account/ShieldedUsers',
+          },
         ],
       },
       // dashboard

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer, useCallback } from 'react';
+import React, { useState, useEffect, useReducer, useCallback, Fragment } from 'react';
 import { 
 	Card,
 	Form,
@@ -6,12 +6,16 @@ import {
 	Input,
 	Select,
 	Spin,
-	Button
+	Button,
+	Table,
+	Popconfirm,
+	Icon
 } from 'antd';
 import {
 	getShieldTypes,
 	getShieldUserList,
-	setShieldUser
+	setShieldUser,
+	getShieldedUsers
 } from '@/services/user';
 import { debounce } from 'lodash';
 
@@ -106,6 +110,7 @@ function ShieldedUsers() {
 	useEffect(() => {
 		(async () => {
 			const shieldTypes = await getShieldTypes();
+			const shieldedUsers = await getShieldedUsers();
 			dispatch({ type: 'INIT', payload: shieldTypes });
 		})();
 	}, []);
@@ -123,62 +128,97 @@ function ShieldedUsers() {
 		}, [formData]
 	);
 
+	const columns = [
+		{
+			title: '屏蔽类型',
+			dataIndex: 'type'
+		},
+		{
+			title: '已屏蔽用户',
+			dataIndex: 'users',
+			render: shieldedUsers => (
+				<Fragment>
+					{shieldedUsers.map(user_id => (
+						<Popconfirm
+							title="确认要取消屏蔽吗"
+						>
+							<div className='ant-tag'>
+								<a>{ user_id }</a>
+								<Icon type='close' />
+							</div>
+						</Popconfirm>
+					))}
+				</Fragment>
+			)
+		}
+	];
+
+	const dataSource = [{
+		type: '禁止下砍价订单',
+		users: ["374809", "377970", "377994"]
+	}]
+
 	return (
-		<Card title="新增屏蔽用户">
-			<Form  { ...formItemLayout } onSubmit={ handleSubmit }>
-				<Form.Item label="用户ID">
-					<Radio.Group
-						value={ shieldMode }
-						onChange={ e => dispatch({
-							type: 'SWITCH_SHIELD_MODE',
-							payload: e.target.value
-						}) }
-					>
-						<Radio value="SEARCH">搜索框</Radio>
-						<Radio value="INPUT">输入框</Radio>
-					</Radio.Group>
-					{shieldMode === 'SEARCH' && (
-						<UserListSelector
-							value={ formData.user_id }
-							onChange={ user_id => dispatch({
+		<Fragment>
+			<Card title="新增屏蔽用户" style={{ marginBottom: '20px' }}>
+				<Form  { ...formItemLayout } onSubmit={ handleSubmit }>
+					<Form.Item label="用户ID">
+						<Radio.Group
+							value={ shieldMode }
+							onChange={ e => dispatch({
+								type: 'SWITCH_SHIELD_MODE',
+								payload: e.target.value
+							}) }
+						>
+							<Radio value="SEARCH">搜索框</Radio>
+							<Radio value="INPUT">输入框</Radio>
+						</Radio.Group>
+						{shieldMode === 'SEARCH' && (
+							<UserListSelector
+								value={ formData.user_id }
+								onChange={ user_id => dispatch({
+									type: 'UPDATE_FORM_DATA',
+									payload: { user_id }
+								}) }
+							/>
+						)}
+						{shieldMode === 'INPUT' && (
+							<Input
+								placeholder="输入用户ID"
+								value={ formData.user_id }
+								onChange={ e => dispatch({ 
+									type: 'UPDATE_FORM_DATA',
+									payload: { user_id: Number(e.target.value) || undefined }
+								}) }
+							/>
+						)}
+					</Form.Item>
+					<Form.Item label="屏蔽类型">
+						<ShieldTypeSelector
+							value={ formData.function_id }
+							shieldTypes={ shieldTypes }
+							onChange={ function_id => dispatch({
 								type: 'UPDATE_FORM_DATA',
-								payload: { user_id }
+								payload: { function_id }
 							}) }
 						/>
-					)}
-					{shieldMode === 'INPUT' && (
-						<Input
-							placeholder="输入用户ID"
-							value={ formData.user_id }
-							onChange={ e => dispatch({ 
-								type: 'UPDATE_FORM_DATA',
-								payload: { user_id: Number(e.target.value) || undefined }
-							}) }
-						/>
-					)}
-				</Form.Item>
-				<Form.Item label="屏蔽类型">
-					<ShieldTypeSelector
-						value={ formData.function_id }
-						shieldTypes={ shieldTypes }
-						onChange={ function_id => dispatch({
-							type: 'UPDATE_FORM_DATA',
-							payload: { function_id }
-						}) }
-					/>
-				</Form.Item>
-				<Form.Item wrapperCol={{ offset: 4 }}>
-					<Button
-						type="primary"
-						htmlType="submit"
-						disabled={ !formData.user_id || !formData.function_id }
-						loading={ isSubmitting }
-					>
-						提交
-					</Button>
-				</Form.Item>
-			</Form>
-		</Card>
+					</Form.Item>
+					<Form.Item wrapperCol={{ offset: 4 }}>
+						<Button
+							type="primary"
+							htmlType="submit"
+							disabled={ !formData.user_id || !formData.function_id }
+							loading={ isSubmitting }
+						>
+							提交
+						</Button>
+					</Form.Item>
+				</Form>
+			</Card>
+			<Card title="已屏蔽用户">
+				<Table columns={columns} dataSource={dataSource} />
+			</Card>
+		</Fragment>
 	)
 };
 

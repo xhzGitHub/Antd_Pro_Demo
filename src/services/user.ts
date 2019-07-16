@@ -55,3 +55,7 @@ export function setShieldUser(payload) {
     body: payload
   });
 }
+
+export function getShieldedUsers() {
+  return request(`/api/shield-user-function/all`);
+}

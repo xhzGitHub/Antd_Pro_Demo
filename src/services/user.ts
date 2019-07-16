@@ -44,3 +44,14 @@ export function getSheildTypes() {
       return typeArray;
     });
 }
+
+export function getSheildUserList(query?: any) {
+  return request(withQuery(`/api/user-list`, query));
+}
+
+export function setSheildUser(payload) {
+  return request(`/api/shield-user-function/add`, {
+    method:'POST',
+    body: payload
+  });
+}

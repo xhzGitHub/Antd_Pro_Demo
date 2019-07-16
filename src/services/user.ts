@@ -31,10 +31,10 @@ export function rewardPointToUser({ user_id, payload }) {
   });
 }
 
-export function getSheildTypes() {
+export function getShieldTypes(): Promise<User.ShieldTypeArray> {
   return request(`/api/shield-user-function/list`)
     .then(types => {
-      let typeArray = [];
+      let typeArray: User.ShieldTypeArray = [];
       for (const key of Object.keys(types)) {
         typeArray.push({
           id: types[key],
@@ -45,11 +45,11 @@ export function getSheildTypes() {
     });
 }
 
-export function getSheildUserList(query?: any) {
+export function getShieldUserList(query?: any) {
   return request(withQuery(`/api/user-list`, query));
 }
 
-export function setSheildUser(payload) {
+export function setShieldUser(payload) {
   return request(`/api/shield-user-function/add`, {
     method:'POST',
     body: payload

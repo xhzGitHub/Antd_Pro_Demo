@@ -6,20 +6,14 @@ import {
 	Input,
 	Select,
 	Spin,
-	Button,
-	message
+	Button
 } from 'antd';
 import {
-	getSheildTypes,
-	getSheildUserList,
-	setSheildUser
+	getShieldTypes,
+	getShieldUserList,
+	setShieldUser
 } from '@/services/user';
 import { debounce } from 'lodash';
-
-interface SheildType {
-	id: number;
-	name: string;
-}
 
 const { Option } = Select;
 
@@ -29,26 +23,55 @@ const formItemLayout = {
 };
 
 const initialState = {
-	sheildMode: 'SEARCH',
-	sheildTypes: [] as Array<SheildType>,
+	shieldMode: 'SEARCH',
+	shieldTypes: [] as User.ShieldTypeArray,
 	isSubmitting: false,
 	formData: {
-		function_id: undefined,
-		user_id: undefined
+		function_id: undefined as User.ShieldFunctionID,
+		user_id: undefined as User.UserID
 	}
 };
 
-const reducer = (state, action) => {
+type State = typeof initialState;
+
+type Action = 
+	| { 
+			type: 'INIT';
+			payload: User.ShieldTypeArray;
+		}
+	| {
+			type: 'SWITCH_SHIELD_MODE';
+			payload: { shieldMode: string };
+		}
+	| {
+			type: 'UPDATE_FORM_DATA';
+			payload: { 
+				user_id: User.UserID
+			}
+		}
+	| {
+		type: 'UPDATE_FORM_DATA';
+		payload: { 
+			function_id: User.ShieldFunctionID
+		}
+	}
+	| {
+			type: 'SUBMIT';
+			isSubmitting: boolean;
+			reset?: boolean;
+		}
+
+const reducer = (state: State, action: Action) => {
 	switch(action.type) {
 		case 'INIT':
 			return { 
 				...state,
-				sheildTypes: action.payload
+				...action.payload
 			};
 		case 'SWITCH_SHIELD_MODE':
 			return {
 				...state,
-				sheildMode: action.payload 
+				shieldMode: action.payload 
 			};
 		case 'UPDATE_FORM_DATA':
 			return { 
@@ -78,19 +101,19 @@ const reducer = (state, action) => {
 
 function ShieldedUsers() {
 	const [state, dispatch] = useReducer(reducer, initialState);
-	const { sheildMode, sheildTypes, isSubmitting, formData } = state;
+	const { shieldMode, shieldTypes, isSubmitting, formData } = state;
 
 	useEffect(() => {
 		(async () => {
-			const sheildTypes = await getSheildTypes();
-			dispatch({ type: 'INIT', payload: sheildTypes });
+			const shieldTypes = await getShieldTypes();
+			dispatch({ type: 'INIT', payload: shieldTypes });
 		})();
 	}, []);
 
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		dispatch({ type: 'SUBMIT', isSubmitting: true });
-		const res = await setSheildUser(formData);
+		const res = await setShieldUser(formData);
 		if (res.errcode === 0) {
 			dispatch({ type: 'SUBMIT', isSubmitting: false, reset: true });
 		} else {
@@ -103,7 +126,7 @@ function ShieldedUsers() {
 			<Form  { ...formItemLayout } onSubmit={ handleSubmit }>
 				<Form.Item label="用户ID">
 					<Radio.Group
-						value={ sheildMode }
+						value={ shieldMode }
 						onChange={ e => dispatch({
 							type: 'SWITCH_SHIELD_MODE',
 							payload: e.target.value
@@ -112,8 +135,8 @@ function ShieldedUsers() {
 						<Radio value="SEARCH">搜索框</Radio>
 						<Radio value="INPUT">输入框</Radio>
 					</Radio.Group>
-					{sheildMode === 'SEARCH' && (
-						<UserList
+					{shieldMode === 'SEARCH' && (
+						<UserListSelector
 							value={ formData.user_id }
 							onChange={ user_id => dispatch({
 								type: 'UPDATE_FORM_DATA',
@@ -121,7 +144,7 @@ function ShieldedUsers() {
 							}) }
 						/>
 					)}
-					{sheildMode === 'INPUT' && (
+					{shieldMode === 'INPUT' && (
 						<Input
 							placeholder="输入用户ID"
 							value={ formData.user_id }
@@ -133,9 +156,9 @@ function ShieldedUsers() {
 					)}
 				</Form.Item>
 				<Form.Item label="屏蔽类型">
-					<SheildTypeSelector
+					<ShieldTypeSelector
 						value={ formData.function_id }
-						sheildTypes={ sheildTypes }
+						shieldTypes={ shieldTypes }
 						onChange={ function_id => dispatch({
 							type: 'UPDATE_FORM_DATA',
 							payload: { function_id }
@@ -147,7 +170,7 @@ function ShieldedUsers() {
 						type="primary"
 						htmlType="submit"
 						disabled={ !formData.user_id || !formData.function_id }
-						loading={isSubmitting}
+						loading={ isSubmitting }
 					>
 						提交
 					</Button>
@@ -159,15 +182,21 @@ function ShieldedUsers() {
 
 export default Form.create()(ShieldedUsers);
 
-function UserList({ value, onChange }) {
-	const [userList, setUserList] = useState<Array<any>>([]);
+function UserListSelector({ 
+	value,
+	onChange
+ }: {
+	value: User.UserID;
+	onChange: (id: User.UserID) => any
+}) {
+	const [userList, setUserList] = useState<User.List>([]);
 	const [isLoading, setIsLoading] = useState(false);
 
-	const handleSearchUser = async (val) => {
-		const query = { search: val };
+	const handleSearchUser = async (search: User.FuzzySearch) => {
+		const query = { search };
 		if (query.search) {
 			setIsLoading(true);
-			const res = await getSheildUserList(query);
+			const res = await getShieldUserList(query);
 			setUserList(res.data);
 			setIsLoading(false);
 		}
@@ -193,13 +222,17 @@ function UserList({ value, onChange }) {
 	);
 }
 
-function SheildTypeSelector({ value, sheildTypes, onChange }) {
+function ShieldTypeSelector({ value, shieldTypes, onChange }: {
+	value: User.ShieldFunctionID;
+	shieldTypes: User.ShieldTypeArray;
+	onChange: (user_id: User.ShieldFunctionID) => any;
+}) {
 	return (
 		<Select
 			value={ value }
 			onChange={ onChange }
 		>
-			{sheildTypes.map(type => (
+			{shieldTypes.map(type => (
 				<Option
 					value={ type.id }
 					key={ type.id }

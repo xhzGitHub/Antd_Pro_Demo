@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useReducer } from 'react';
+import React, { useState, useEffect, useReducer, useCallback } from 'react';
 import { 
 	Card,
 	Form,
@@ -66,7 +66,7 @@ const reducer = (state: State, action: Action) => {
 		case 'INIT':
 			return { 
 				...state,
-				...action.payload
+				shieldTypes: action.payload
 			};
 		case 'SWITCH_SHIELD_MODE':
 			return {
@@ -110,16 +110,18 @@ function ShieldedUsers() {
 		})();
 	}, []);
 
-	const handleSubmit = async (e) => {
-		e.preventDefault();
-		dispatch({ type: 'SUBMIT', isSubmitting: true });
-		const res = await setShieldUser(formData);
-		if (res.errcode === 0) {
-			dispatch({ type: 'SUBMIT', isSubmitting: false, reset: true });
-		} else {
-			dispatch({ type: 'SUBMIT', isSubmitting: false });
-		}
-	};
+	const handleSubmit = useCallback(
+		async (e) => {
+			e.preventDefault();
+			dispatch({ type: 'SUBMIT', isSubmitting: true });
+			const res = await setShieldUser(formData);
+			if (res.errcode === 0) {
+				dispatch({ type: 'SUBMIT', isSubmitting: false, reset: true });
+			} else {
+				dispatch({ type: 'SUBMIT', isSubmitting: false });
+			}
+		}, [formData]
+	);
 
 	return (
 		<Card title="新增屏蔽用户">
@@ -192,15 +194,17 @@ function UserListSelector({
 	const [userList, setUserList] = useState<User.List>([]);
 	const [isLoading, setIsLoading] = useState(false);
 
-	const handleSearchUser = async (search: User.FuzzySearch) => {
-		const query = { search };
-		if (query.search) {
-			setIsLoading(true);
-			const res = await getShieldUserList(query);
-			setUserList(res.data);
-			setIsLoading(false);
-		}
-	};
+	const handleSearchUser = useCallback(
+		async (search: User.FuzzySearch) => {
+			const query = { search };
+			if (query.search) {
+				setIsLoading(true);
+				const res = await getShieldUserList(query);
+				setUserList(res.data);
+				setIsLoading(false);
+			}
+		}, []
+	);
 
 	return (
 		<Select

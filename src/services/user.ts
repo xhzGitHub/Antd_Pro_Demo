@@ -56,6 +56,22 @@ export function setShieldUser(payload) {
   });
 }
 
-export function getShieldedUsers() {
-  return request(`/api/shield-user-function/all`);
+export function getShieldedUsers(): Promise<User.ShieldedUsersList> {
+  return request(`/api/shield-user-function/all`).then(users => {
+    const usersArray: User.ShieldedUsersList = [];
+    for (const key of Object.keys(users)) {
+      usersArray.push({
+        type: key,
+        users: users[key]
+      });
+    }
+    return usersArray;
+  });
+}
+
+export function removeShieldedUsers(payload) {
+  return request(`/api/shield-user-function/remove`, {
+    method: 'POST',
+    body: payload
+  });
 }

@@ -48,4 +48,11 @@ declare namespace User {
 
   type FuzzySearch = UserID;
 
+  interface ShieldedUsers {
+    type: ShieldType["name"];
+    users: UserID[];
+  }
+
+  type ShieldedUsersList = ShieldedUsers[];
+
 };

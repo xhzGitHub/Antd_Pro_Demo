@@ -9,15 +9,17 @@ import {
 	Button,
 	Table,
 	Popconfirm,
-	Icon
+	Icon,
 } from 'antd';
 import {
 	getShieldTypes,
 	getShieldUserList,
 	setShieldUser,
-	getShieldedUsers
+	getShieldedUsers,
+	removeShieldedUsers
 } from '@/services/user';
 import { debounce } from 'lodash';
+import { navigateTo } from '@/utils/routes';
 
 const { Option } = Select;
 
@@ -29,6 +31,7 @@ const formItemLayout = {
 const initialState = {
 	shieldMode: 'SEARCH',
 	shieldTypes: [] as User.ShieldTypeArray,
+	shieldedUsers: [] as User.ShieldedUsersList,
 	isSubmitting: false,
 	formData: {
 		function_id: undefined as User.ShieldFunctionID,
@@ -41,7 +44,10 @@ type State = typeof initialState;
 type Action = 
 	| { 
 			type: 'INIT';
-			payload: User.ShieldTypeArray;
+			payload: {
+				shieldTypes: User.ShieldTypeArray,
+				shieldedUsers: User.ShieldedUsersList
+			};
 		}
 	| {
 			type: 'SWITCH_SHIELD_MODE';
@@ -54,15 +60,20 @@ type Action =
 			}
 		}
 	| {
-		type: 'UPDATE_FORM_DATA';
-		payload: { 
-			function_id: User.ShieldFunctionID
+			type: 'UPDATE_FORM_DATA';
+			payload: { 
+				function_id: User.ShieldFunctionID
+			}
 		}
-	}
+	| {
+			type: 'UPDATE_SHIELDED_USERS';
+			payload: User.ShieldedUsersList;
+		}
 	| {
 			type: 'SUBMIT';
 			isSubmitting: boolean;
 			reset?: boolean;
+			shieldedUsers?: User.ShieldedUsersList;
 		}
 
 const reducer = (state: State, action: Action) => {
@@ -70,7 +81,7 @@ const reducer = (state: State, action: Action) => {
 		case 'INIT':
 			return { 
 				...state,
-				shieldTypes: action.payload
+				...action.payload
 			};
 		case 'SWITCH_SHIELD_MODE':
 			return {
@@ -85,6 +96,11 @@ const reducer = (state: State, action: Action) => {
 					...action.payload
 				}
 			};
+		case 'UPDATE_SHIELDED_USERS':
+			return {
+				...state,
+				shieldedUsers: action.payload
+			};
 		case 'SUBMIT': {
 			const newState = {
 				...state,
@@ -96,8 +112,11 @@ const reducer = (state: State, action: Action) => {
 					user_id: undefined
 				};
 			}
+			if (action.shieldedUsers) {
+				newState.shieldedUsers = action.shieldedUsers;
+			}
 			return newState;
-		}
+		};
 		default:
 			return state;
 	}
@@ -105,13 +124,13 @@ const reducer = (state: State, action: Action) => {
 
 function ShieldedUsers() {
 	const [state, dispatch] = useReducer(reducer, initialState);
-	const { shieldMode, shieldTypes, isSubmitting, formData } = state;
+	const { shieldMode, shieldTypes, shieldedUsers, isSubmitting, formData } = state;
 
 	useEffect(() => {
 		(async () => {
 			const shieldTypes = await getShieldTypes();
 			const shieldedUsers = await getShieldedUsers();
-			dispatch({ type: 'INIT', payload: shieldTypes });
+			dispatch({ type: 'INIT', payload: { shieldTypes, shieldedUsers } });
 		})();
 	}, []);
 
@@ -121,29 +140,55 @@ function ShieldedUsers() {
 			dispatch({ type: 'SUBMIT', isSubmitting: true });
 			const res = await setShieldUser(formData);
 			if (res.errcode === 0) {
-				dispatch({ type: 'SUBMIT', isSubmitting: false, reset: true });
+				const shieldedUsers = await getShieldedUsers();
+				dispatch({ type: 'SUBMIT', isSubmitting: false, reset: true, shieldedUsers });
 			} else {
 				dispatch({ type: 'SUBMIT', isSubmitting: false });
 			}
 		}, [formData]
 	);
 
+	const refreshShieldedUsers = useCallback(async () => {
+		const shieldedUsers = await getShieldedUsers();
+		dispatch({ type: 'UPDATE_SHIELDED_USERS', payload: shieldedUsers });
+	}, [shieldedUsers]);
+
+	const handleRemoveUser = useCallback(async (payload) => {
+		const res = await removeShieldedUsers(payload);
+		if (res.errcode === 0) {
+			refreshShieldedUsers();
+		}
+	}, [shieldedUsers]);
+
+
 	const columns = [
 		{
 			title: '屏蔽类型',
+			key: 'type',
 			dataIndex: 'type'
 		},
 		{
 			title: '已屏蔽用户',
+			key: 'users',
 			dataIndex: 'users',
-			render: shieldedUsers => (
+			render: (usersArray, record) => (
 				<Fragment>
-					{shieldedUsers.map(user_id => (
+					{usersArray.map(user_id => (
 						<Popconfirm
 							title="确认要取消屏蔽吗"
+							key={ user_id }
+							onConfirm={ () => handleRemoveUser({
+								user_id,
+								function_id: (shieldTypes.find(type =>  type.name === record.type)).id
+							}) }
 						>
 							<div className='ant-tag'>
-								<a>{ user_id }</a>
+								<a onClick={ e => {
+									e.stopPropagation();
+									navigateTo('user-detail', user_id);
+								}	}>
+									{ user_id }
+								</a>
 								<Icon type='close' />
 							</div>
 						</Popconfirm>
@@ -152,11 +197,6 @@ function ShieldedUsers() {
 			)
 		}
 	];
-
-	const dataSource = [{
-		type: '禁止下砍价订单',
-		users: ["374809", "377970", "377994"]
-	}]
 
 	return (
 		<Fragment>
@@ -216,7 +256,11 @@ function ShieldedUsers() {
 				</Form>
 			</Card>
 			<Card title="已屏蔽用户">
-				<Table columns={columns} dataSource={dataSource} />
+				<Table
+					columns={ columns }
+					dataSource={ shieldedUsers }
+					pagination={ false }
+				/>
 			</Card>
 		</Fragment>
 	)

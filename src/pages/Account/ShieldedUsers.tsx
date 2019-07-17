@@ -257,6 +257,7 @@ function ShieldedUsers() {
 			</Card>
 			<Card title="已屏蔽用户">
 				<Table
+					rowKey="type"
 					columns={ columns }
 					dataSource={ shieldedUsers }
 					pagination={ false }

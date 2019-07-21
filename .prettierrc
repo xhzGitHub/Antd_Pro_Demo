@@ -3,7 +3,7 @@
   "trailingComma": "es5",
   "printWidth": 100,
   "semi": true,
-  "bracketSpacing": false,
+  "bracketSpacing": true,
   "proseWrap": "preserve",
   "overrides": [
     {

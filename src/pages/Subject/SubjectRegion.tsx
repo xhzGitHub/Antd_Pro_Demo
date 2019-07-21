@@ -1,9 +1,9 @@
-import React, { useReducer, useEffect, useCallback, Fragment } from 'react';
-import { Card, Form, Input, Upload, Icon, Button, Skeleton } from 'antd';
-import { IntlProvider } from 'react-intl';
-import { RouterChildProps } from '@/types/router';
-import { getSubjectRegionDetail } from '@/services/subject';
-import { debounce } from 'lodash';
+import React, {useReducer, useEffect, useCallback, Fragment} from 'react';
+import {Card, Form, Input, Upload, Icon, Button, Skeleton} from 'antd';
+import {IntlProvider} from 'react-intl';
+import {RouterChildProps} from '@/types/router';
+import {getSubjectRegionDetail} from '@/services/subject';
+import {debounce} from 'lodash';
 
 interface Region {
   name: string;
@@ -17,8 +17,8 @@ interface State {
 }
 
 type Action =
-  | { type: 'INIT'; formData: Region; isLoading: boolean }
-  | { type: 'SET_REGION_NAME'; name: Region['name'] };
+  | {type: 'INIT'; formData: Region; isLoading: boolean}
+  | {type: 'SET_REGION_NAME'; name: Region['name']};
 
 const reducer = (state: State, action: Action) => {
   switch (action.type) {
@@ -42,11 +42,11 @@ const reducer = (state: State, action: Action) => {
   }
 };
 
-const { Dragger } = Upload;
+const {Dragger} = Upload;
 
 const formItemLayout = {
-  labelCol: { span: 6 },
-  wrapperCol: { span: 14 },
+  labelCol: {span: 6},
+  wrapperCol: {span: 14},
 };
 
 const initialState = {
@@ -62,7 +62,7 @@ function SubjectRegion(props: RouterChildProps) {
   const regionId = props.match.params.id;
   const isCreating = regionId === undefined;
   const [state, dispatch] = useReducer(reducer, initialState, state =>
-    isCreating ? state : { ...state, isLoading: true }
+    isCreating ? state : {...state, isLoading: true}
   );
 
   useEffect(() => {
@@ -70,13 +70,13 @@ function SubjectRegion(props: RouterChildProps) {
       (async () => {
         const res = await getSubjectRegionDetail(regionId);
         if (Object.keys(res).length) {
-          const { name, image, description } = res;
+          const {name, image, description} = res;
           const formData = {
             name,
             image,
             description,
           };
-          dispatch({ type: 'INIT', formData, isLoading: false });
+          dispatch({type: 'INIT', formData, isLoading: false});
         }
       })();
     }
@@ -93,12 +93,12 @@ function SubjectRegion(props: RouterChildProps) {
     [state]
   );
 
-  const handleSetRegionImage = ({ fileList }) => {
+  const handleSetRegionImage = ({fileList}) => {
     // TODO
     console.log('');
   };
 
-  const { name, image, description } = state.formData;
+  const {name, image, description} = state.formData;
 
   return (
     <IntlProvider>
@@ -129,7 +129,7 @@ function SubjectRegion(props: RouterChildProps) {
                 </Dragger>
               ) : (
                 <Card
-                  cover={<img src={image} style={{ width: '300px', height: '300px' }} />}
+                  cover={<img src={image} style={{width: '300px', height: '300px'}} />}
                   actions={[
                     <Button type="danger">
                       <Icon type="delete" />
@@ -152,8 +152,8 @@ function SubjectRegion(props: RouterChildProps) {
                 </Form.Item>
               </Fragment>
             )}
-            <Form.Item wrapperCol={{ offset: 6 }}>
-              <Button type="primary" style={{ marginRight: '10px' }}>
+            <Form.Item wrapperCol={{offset: 6}}>
+              <Button type="primary" style={{marginRight: '10px'}}>
                 {isCreating ? '创建' : '保存'}
               </Button>
               <Button type="primary">取消</Button>

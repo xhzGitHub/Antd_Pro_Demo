@@ -1,4 +1,4 @@
-import React, { useReducer, useEffect, Fragment } from 'react';
+import React, { useReducer, useEffect, useCallback, Fragment } from 'react';
 import { 
   Card,
   Form,
@@ -11,15 +11,24 @@ import {
 import { IntlProvider } from 'react-intl';
 import { RouterChildProps } from '@/types/router';
 import { getSubjectRegionDetail } from '@/services/subject';
+import { debounce } from 'lodash';
 
-const { Dragger } = Upload;
+interface Region {
+  name: string;
+  image: string;
+  description: string;
+}
 
-const formItemLayout = {
-  labelCol: { span: 6 },
-  wrapperCol: { span: 14 }
-};
+interface State {
+  formData: Region;
+  isLoading: boolean;
+}
 
-const reducer = (state, action) => {
+type Action =
+ | { type: 'INIT', formData: Region, isLoading: boolean }
+ | { type: 'SET_REGION_NAME', name: Region['name'] };
+
+const reducer = (state: State, action: Action) => {
   switch (action.type) {
     case 'INIT':
       return {
@@ -30,15 +39,30 @@ const reducer = (state, action) => {
         },
         isLoading: action.isLoading
       };
+    case 'SET_REGION_NAME':
+      return {
+        ...state,
+        formData: {
+          ...state.formData,
+          name: action.name
+        }
+      }
   }
-}
+};
+
+const { Dragger } = Upload;
+
+const formItemLayout = {
+  labelCol: { span: 6 },
+  wrapperCol: { span: 14 }
+};
 
 const initialState = {
   formData: {
     name: '',
     image: '',
     description: ''
-  },
+  } as Region,
   isLoading: false
 };
 
@@ -66,6 +90,18 @@ function SubjectRegion(props: RouterChildProps) {
     }
   }, []);
 
+  // useCallback 可再考虑一下！
+  const handleSetRegionName = useCallback(debounce(val => {
+    dispatch({
+      type: 'SET_REGION_NAME',
+      name: val
+    });
+  }, 500), [state]);
+
+  const handleSetRegionImage = ({ fileList }) => {
+    // TODO
+  };
+
   const { name, image, description } = state.formData;
   
   return (
@@ -81,8 +117,14 @@ function SubjectRegion(props: RouterChildProps) {
             <Form { ...formItemLayout }>
               <Form.Item label="商圈名称">
                 {isCreating
-                  ? (<Input placeholder="输入商圈名称" />)
-                  : (<span>{ name }</span>)
+                  ? (
+                    <Input
+                      placeholder="输入商圈名称" 
+                      onChange={e => {
+                        handleSetRegionName(e.target.value);
+                      }}
+                    />
+                  ) : (<span>{ name }</span>)
                 }
               </Form.Item>
               <Form.Item label="展示图片">
@@ -90,6 +132,7 @@ function SubjectRegion(props: RouterChildProps) {
                   <Dragger
                     name="file"
                     multiple={true}
+                    onChange={handleSetRegionImage}
                   >
                     <p className="ant-upload-drag-icon">
                       <Icon type="inbox" />
@@ -131,7 +174,7 @@ function SubjectRegion(props: RouterChildProps) {
                   type="primary"
                   style={{ marginRight: '10px' }}
                 >
-                  创建
+                  {isCreating ? '创建' : '保存'}
                 </Button>
                 <Button type="primary">取消</Button>
               </Form.Item>

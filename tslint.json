@@ -1,11 +1,22 @@
 {
-  "extends": ["tslint:latest", "tslint-react", "tslint-config-prettier"],
+  "extends": ["tslint:recommended", "tslint-react", "tslint-react-hooks", "tslint-config-prettier"],
   "rules": {
-    "no-var-requires": false,
-    "no-submodule-imports": false,
+    "curly": false,
+    "ordered-imports": false,
     "object-literal-sort-keys": false,
+    "max-classes-per-file": false,
+    "member-access": false,
+    "member-ordering": false,
+    "no-namespace": false,
+    "no-string-literal": false,
+    "no-shadowed-variable": false,
+    "interface-name": false,
+    "prefer-for-of": false,
+    "variable-name": false,
     "jsx-no-lambda": false,
-    "no-implicit-dependencies": false,
-    "no-console": true
+    "jsx-boolean-value": false
+  },
+  "linterOptions": {
+    "exclude": ["node_modules"]
   }
 }

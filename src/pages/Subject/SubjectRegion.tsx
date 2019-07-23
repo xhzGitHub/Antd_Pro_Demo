@@ -18,7 +18,8 @@ interface State {
 
 type Action =
   | { type: "INIT"; formData: Region; isLoading: boolean }
-  | { type: "SET_REGION_NAME"; name: Region["name"] };
+  | { type: "SET_REGION_NAME"; name: Region["name"] }
+  | { type: "SET_DISPLAY_IMAGE"; image: Region["image"] }
 
 const reducer = (state: State, action: Action) => {
   switch (action.type) {
@@ -39,6 +40,14 @@ const reducer = (state: State, action: Action) => {
           name: action.name
         }
       };
+    case "SET_DISPLAY_IMAGE":
+      return {
+        ...state,
+        formData: {
+          ...state.formData,
+          image: action.image
+        }
+      }
   }
 };
 
@@ -93,10 +102,17 @@ function SubjectRegion(props: RouterChildProps) {
     [state]
   );
 
-  const handleSetRegionImage = ({ fileList }) => {
-    // TODO
-    console.log("");
+  const handleSetRegionImage = ({ file }) => {
+    if (file.status === 'done') {
+      const image = file.response.data.url;
+      dispatch({
+        type: "SET_DISPLAY_IMAGE",
+        image
+      });
+    }
   };
+
+  console.log('state', state);
 
   const { name, image, description } = state.formData;
 
@@ -120,8 +136,15 @@ function SubjectRegion(props: RouterChildProps) {
               )}
             </Form.Item>
             <Form.Item label="展示图片">
-              {isCreating ? (
-                <Dragger name="file" multiple={true} onChange={handleSetRegionImage}>
+              {!image ?
+              (
+                <Dragger
+                  multiple={true}
+                  showUploadList={false}
+                  withCredentials
+                  action={`https://admin.beta.jojotu.cn/api/assets`}
+                  onChange={handleSetRegionImage}
+                >
                   <p className="ant-upload-drag-icon">
                     <Icon type="inbox" />
                   </p>

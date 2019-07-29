@@ -1,8 +1,11 @@
-import React, { useReducer, useEffect, useCallback, Fragment } from "react";
-import { Card, Form, Input, Upload, Icon, Button, Skeleton } from "antd";
+import React, { useState, useReducer, useEffect, useCallback, Fragment } from "react";
+import { Card, Form, Input, Upload, Icon, Button, Skeleton, Select, Spin } from "antd";
 import { IntlProvider } from "react-intl";
 import { RouterChildProps } from "@/types/router";
-import { getSubjectRegionDetail } from "@/services/subject";
+import { 
+  getSubjectRegionDetail,
+  getSearchRegionList
+} from "@/services/subject";
 import { debounce } from "lodash";
 
 interface Region {
@@ -18,8 +21,7 @@ interface State {
 
 type Action =
   | { type: "INIT"; formData: Region; isLoading: boolean }
-  | { type: "SET_REGION_NAME"; name: Region["name"] }
-  | { type: "SET_DISPLAY_IMAGE"; image: Region["image"] }
+  | { type: "CHANGE_FIELD"; field: string; value: Region["name"] | Region["image"] | Region["description"]}
 
 const reducer = (state: State, action: Action) => {
   switch (action.type) {
@@ -32,26 +34,19 @@ const reducer = (state: State, action: Action) => {
         },
         isLoading: action.isLoading
       };
-    case "SET_REGION_NAME":
+    case "CHANGE_FIELD":
       return {
         ...state,
         formData: {
           ...state.formData,
-          name: action.name
+          [action.field]: action.value
         }
       };
-    case "SET_DISPLAY_IMAGE":
-      return {
-        ...state,
-        formData: {
-          ...state.formData,
-          image: action.image
-        }
-      }
   }
 };
 
 const { Dragger } = Upload;
+const { Option } = Select;
 
 const formItemLayout = {
   labelCol: { span: 6 },
@@ -92,11 +87,12 @@ function SubjectRegion(props: RouterChildProps) {
   }, []);
 
   // useCallback 可再考虑一下！
-  const handleSetRegionName = useCallback(
-    debounce(val => {
+  const handleSetState = useCallback(
+    debounce((field, value) => {
       dispatch({
-        type: "SET_REGION_NAME",
-        name: val
+        type: "CHANGE_FIELD",
+        field,
+        value
       });
     }, 500),
     [state]
@@ -106,8 +102,9 @@ function SubjectRegion(props: RouterChildProps) {
     if (file.status === 'done') {
       const image = file.response.data.url;
       dispatch({
-        type: "SET_DISPLAY_IMAGE",
-        image
+        type: "CHANGE_FIELD",
+        field: 'image',
+        value: image
       });
     }
   };
@@ -125,11 +122,13 @@ function SubjectRegion(props: RouterChildProps) {
           <Form {...formItemLayout}>
             <Form.Item label="商圈名称">
               {isCreating ? (
-                <Input
-                  placeholder="输入商圈名称"
-                  onChange={e => {
-                    handleSetRegionName(e.target.value);
-                  }}
+                <RegionList
+                  value={name}
+                  onChange={value => dispatch({
+                    type: 'CHANGE_FIELD',
+                    field: 'name',
+                    value
+                  })}
                 />
               ) : (
                 <span>{name}</span>
@@ -163,7 +162,15 @@ function SubjectRegion(props: RouterChildProps) {
               <div>(图片大小300k以内)</div>
             </Form.Item>
             <Form.Item label="展示文案">
-              <Input placeholder="最多15个字符，包括标点符号" value={description} />
+              <Input
+                placeholder="最多15个字符，包括标点符号"
+                value={description}
+                onChange={e => dispatch({
+                  type: 'CHANGE_FIELD',
+                  field: 'description',
+                  value: e.target.value
+                })}
+              />
             </Form.Item>
             {!isCreating && (
               <Fragment>
@@ -188,4 +195,34 @@ function SubjectRegion(props: RouterChildProps) {
   );
 }
 
+function RegionList(value, onChange) {
+  const [regionList, setRegionList] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSearch = async (search) => {
+    setIsLoading(true);
+    const res = await getSearchRegionList({ search });
+    setIsLoading(false);
+    console.log('res', res);
+  };
+
+  return (
+    <Select
+      showSearch
+      placeholder="输入商圈名称"
+      value={value}
+      onChange={onChange}
+      onSearch={handleSearch}
+      notFoundContent={ isLoading ? <Spin spinning /> : null }
+    >
+      {regionList.map(r => (
+        <Option key={r.id}>
+          {r.name}
+        </Option>
+      ))}
+    </Select>
+  )
+}
+
 export default Form.create()(SubjectRegion);
+

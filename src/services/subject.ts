@@ -23,3 +23,7 @@ export function setRegionOnlineStatus({ id, payload }) {
 export function getSubjectRegionDetail(id) {
   return request(`/api/subject-region/${id}`);
 }
+
+export function getSearchRegionList(query: any) {
+  return request(withQuery(`/api/subject-region/un-conf?city_id=97`, query));
+}

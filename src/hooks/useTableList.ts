@@ -14,7 +14,7 @@ interface ReturnValue<T> {
   getFilter: (field: string) => any | any[];
   setFilters: (filters: { [key: string]: any | any[] }) => void;
   getColumns: (columns: Array<ExportColumnProps<T>>) => Array<ExportColumnProps<T>>;
-  // refreshList: () => void;
+  refreshList: () => void;
 }
 
 type ExportFunc<T> = (record: T) => string;
@@ -126,6 +126,8 @@ export default function useTableList<T = any>(options: UseTableListOptions): Ret
     getColumns,
     setFilters,
     getFilter,
+    refreshList: () => setState({ ...state, loading: true }),
+    // refreshList: () => console.log('1'),
   };
 }
 

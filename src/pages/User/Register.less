@@ -1,7 +1,7 @@
-@import '~antd/lib/style/themes/default.less';
+@import "~antd/lib/style/themes/default.less";
 
 .main {
-  width: 388px;
+  width: 368px;
   margin: 0 auto;
 
   :global {
@@ -11,8 +11,28 @@
   }
 
   h3 {
-    margin-bottom: 20px;
     font-size: 16px;
+    margin-bottom: 20px;
+  }
+
+  .mobileGroup {
+    :global {
+      .ant-form-item {
+        margin-bottom: 0;
+        vertical-align: top;
+
+        &:first-child .ant-select-selection {
+          border-right-width: 0;
+          border-top-right-radius: 0;
+          border-bottom-right-radius: 0;
+        }
+
+        &:last-child .ant-input {
+          border-top-left-radius: 0;
+          border-bottom-left-radius: 0;
+        }
+      }
+    }
   }
 
   .getCaptcha {
@@ -30,10 +50,8 @@
   }
 }
 
-.success,
-.warning,
-.error {
-  transition: color 0.3s;
+.success, .warning, .error {
+  transition: color .3s;
 }
 
 .success {
@@ -55,3 +73,4 @@
     }
   }
 }
+

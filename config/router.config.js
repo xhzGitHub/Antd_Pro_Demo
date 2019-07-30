@@ -92,6 +92,42 @@ export default [
           },
         ],
       },
+      {
+        name: '主题',
+        icon: 'book',
+        path: '/subject',
+        routes: [
+          {
+            id: "subject-region-list",
+            path: "/subject/region-list",
+            name: "热门商圈",
+            component: "./Subject/SubjectRegionList"
+          },
+          {
+            id: "create-subject-region",
+            path: "/subject/region/create",
+            component: "./Subject/SubjectRegion",
+            hideInMenu: true
+          },
+          {
+            id: "subject-region",
+            path: "/subject/region/:id",
+            component: "./Subject/SubjectRegion",
+            hideInMenu: true
+          },
+          {
+            name: '首页推送设置',
+            path: "/subject/pool-regions",
+            component: "./Subject/SubjectPoolRegionList",
+          },
+          {
+            id: "create-subject-pool",
+            path: "/subject/pool/create",
+            component: "./Subject/SubjectPool",
+            hideInMenu: true
+          },
+        ]
+      },
       // dashboard
       { path: '/', redirect: '/dashboard/analysis', authority: ['admin', 'user'] },
       {

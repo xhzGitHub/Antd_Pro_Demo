@@ -85,6 +85,11 @@ export default [
             name: '屏蔽用户',
             component: './Account/ShieldedUsers',
           },
+          {
+            path: '/account/admins-list',
+            name: '管理员列表',
+            component: './Account/PermissionUserList',
+          },
         ],
       },
       // dashboard

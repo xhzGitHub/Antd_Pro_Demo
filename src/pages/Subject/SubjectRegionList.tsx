@@ -97,7 +97,7 @@ export default function SubjectRegionList() {
       title: '操作',
       dataIndex: 'action',
       render: (_, record) => (
-        <Link to={getUrl("subject-region", record.id)}>配置</Link>
+        <Link to={getUrl("user-detail", record.id)}>配置</Link>
       )
     }
   ]

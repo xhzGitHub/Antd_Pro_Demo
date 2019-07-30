@@ -75,3 +75,7 @@ export function removeShieldedUsers(payload) {
     body: payload
   });
 }
+
+export function getAdmins() {
+  return request(`/api/user-admins`);
+} 

@@ -77,5 +77,20 @@ export function removeShieldedUsers(payload) {
 }
 
 export function getAdmins() {
-  return request(`/api/user-admins`);
-} 
+  return request(`/api/user-admins?page=3`);
+}
+
+export function resetAdminPassword(payload) {
+   return request(`/api/reset-password`, {
+     method: 'POST',
+     body: payload
+   });
+}
+
+export function getPermissions() {
+  return request(`/api/user-permission`);
+}
+
+export function getAdminPermissions(user_id) {
+  return request(`/api/user-permission/${user_id}`);
+}

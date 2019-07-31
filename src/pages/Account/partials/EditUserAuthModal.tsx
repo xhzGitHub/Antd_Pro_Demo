@@ -1,4 +1,9 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, {
+  useContext,
+  useState,
+  useEffect,
+  useCallback
+} from 'react';
 import {
   Modal,
   Form,
@@ -6,9 +11,12 @@ import {
   Button,
   Checkbox
 } from 'antd';
+import { FormComponentProps } from 'antd/lib/form';
 import {
   getPermissions,
   getAdminPermissions,
+  postAdminPermissions,
+  createAdmin
 } from '@/services/user';
 import { AdminContext } from '../PermissionUserList';
 
@@ -17,16 +25,21 @@ const formItemLayout = {
   wrapperCol: { span: 18 },
 };
 
-function EditUserAuthModal(props) {
+function EditUserAuthModal(props: FormComponentProps) {
   const {
-    state: { admin, isShowModal },
+    state: { admin, isCreate, isShowModal },
     dispatch
   } = useContext(AdminContext);
 
-  const [permissions, setPermissions] = useState([]);
-  const [adminPermissions, setAdminPermissions] = useState([]);
+  const [permissions, setPermissions] = useState<Auth.AllPermissions>([]);
+  const [adminPermissions, setAdminPermissions] = useState<Auth.AdminPermissions>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { getFieldDecorator, getFieldValue } = props.form;
+  const {
+    getFieldDecorator,
+    setFieldsValue,
+    validateFields
+  } = props.form;
   
   useEffect(() => {
     (async () => {
@@ -45,23 +58,46 @@ function EditUserAuthModal(props) {
 
   useEffect(() => {
     if (isShowModal) {
-      (async () => {
-        const res = await getAdminPermissions(admin.id);
-        if (res && res.data) {
-          const adminPermissions = res.data.map(a => a.id);
-          setAdminPermissions(adminPermissions);
-        }
-      })();
+      if (!isCreate) {
+        (async () => {
+          const res = await getAdminPermissions(admin.id);
+          if (res && res.data) {
+            const adminPermissions = res.data.map(a => a.id);
+            setAdminPermissions(adminPermissions);
+          }
+        })();
+      } else {
+        setAdminPermissions([]);
+      }
     }
   }, [isShowModal]);
 
-  const handleSubmit = () => {
-    dispatch({
-      type: 'HIDE_MODAL',
-      isShowModal: false
-    })
-    console.log('ok');
-  };
+  const handleSubmit = useCallback(
+    () => {
+      setIsSubmitting(true);
+      validateFields(async (errors, value) => {
+        if (errors) return;
+        const payload = {
+          ...value,
+          permission: adminPermissions
+        };
+
+        let response;
+        if (isCreate) {
+          response = await createAdmin(payload);
+        } else {
+          response = await postAdminPermissions(payload);
+        }
+        setIsSubmitting(false);
+        
+        if (response && response.errcode === 0) {
+          dispatch({
+            type: 'HIDE_MODAL'
+          });
+        }
+      })
+    }, [admin.name, adminPermissions]
+  )
 
   console.log('admin', admin);
 
@@ -71,8 +107,7 @@ function EditUserAuthModal(props) {
         title="编辑管理员"
         visible={ isShowModal }
         onCancel={ () => dispatch({
-          type: 'HIDE_MODAL',
-          isShowModal: false
+          type: 'HIDE_MODAL'
         }) }
         footer={ null }
       >
@@ -83,17 +118,23 @@ function EditUserAuthModal(props) {
               rules: [{ required: true, message: '用户ID为必填项 !' }]
             })(
               <Input
-                value={ getFieldValue('user_id') }
+                onChange={ e => setFieldsValue({
+                  user_id: e.target.value
+                }) }
                 disabled={ Boolean(admin.id) }
               />
             )}
           </Form.Item>
           <Form.Item label="用户名">
-            {getFieldDecorator('user_name', {
+            {getFieldDecorator('user_real_name', {
               initialValue: admin.name,
               rules: [{ required: true, message: '用户名为必填项 !' }]
             })(
-              <Input value={ getFieldValue('user_name') } />
+              <Input
+                onChange={ e => setFieldsValue({
+                  user_real_name: e.target.value
+                }) }
+              />
             )}
           </Form.Item>
           <Form.Item label="邮箱">
@@ -102,7 +143,9 @@ function EditUserAuthModal(props) {
               rules: [{ required: true, message: '邮箱为必填项 !' }]
             })(
               <Input
-                value={ getFieldValue('user_email') }
+                onChange={ e => setFieldsValue({
+                  user_email: e.target.value
+                }) }
                 disabled={ Boolean(admin.email) }
               />
             )}
@@ -111,12 +154,14 @@ function EditUserAuthModal(props) {
             <Checkbox.Group
               options={ permissions }
               value={ adminPermissions }
+              onChange={ val => setAdminPermissions(val) }
             />
           </Form.Item>
           <Form.Item wrapperCol={{offset: 6}}>
             <Button
               type="primary"
-              onClick={handleSubmit}
+              disabled={ isSubmitting }
+              onClick={ handleSubmit }
             >
               提交
             </Button>

@@ -94,3 +94,17 @@ export function getPermissions() {
 export function getAdminPermissions(user_id) {
   return request(`/api/user-permission/${user_id}`);
 }
+
+export function postAdminPermissions(payload) {
+   return request(`/api/user-permission`, {
+     method: 'POST',
+     body: payload
+   });
+}
+
+export function createAdmin(payload) {
+  return request(`/api/new-administrator`, {
+    method: 'POST',
+    body: payload
+  });
+}

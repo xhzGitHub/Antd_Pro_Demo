@@ -1,4 +1,4 @@
-import React, { useReducer, useContext } from 'react';
+import React, { useReducer } from 'react';
 import {
   Card,
   Button,
@@ -19,6 +19,7 @@ import EditUserAuthModal from "./partials/EditUserAuthModal";
 
 interface State {
   admin: Auth.Admin;
+  isCreate: boolean;
   isShowModal: boolean;
 }
 
@@ -35,12 +36,13 @@ const initialState = {
     name: '',
     email: ''
   },
+  isCreate: false,
   isShowModal: false
 } as State;
 
 type Action = 
-  | { type: 'SHOW_MODAL'; admin: Auth.Admin; isShowModal: boolean }
-  | { type: 'HIDE_MODAL'; isShowModal: boolean };
+  | { type: 'SHOW_MODAL'; admin: Auth.Admin; isCreate: boolean }
+  | { type: 'HIDE_MODAL'; };
 
 const reducer = (state, action) => {
   switch(action.type) {
@@ -48,6 +50,7 @@ const reducer = (state, action) => {
       return {
         ...state,
         admin: action.admin,
+        isCreate: action.isCreate,
         isShowModal: true
       }
     case 'HIDE_MODAL':
@@ -103,7 +106,8 @@ export default function PermissionUserList() {
           <Divider type="vertical" />
           <a onClick={() => dispatch({
             type: 'SHOW_MODAL',
-            admin: record
+            admin: record,
+            isCreate: false
           })}>
             修改权限
           </a>
@@ -130,6 +134,11 @@ export default function PermissionUserList() {
           <Button
             style={{ display: 'inline-block', width: '35%' }}
             type="primary"
+            onClick={() => dispatch({
+              type: 'SHOW_MODAL',
+              admin: initialState,
+              isCreate: true
+            })}
           >
             添加管理员
           </Button>

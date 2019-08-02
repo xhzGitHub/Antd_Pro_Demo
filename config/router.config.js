@@ -98,6 +98,12 @@ export default [
         path: '/subject',
         routes: [
           {
+            id: "subject-list",
+            path: "/subject/list",
+            name: "主题列表",
+            component: "./Subject/SubjectList"
+          },
+          {
             id: "subject-region-list",
             path: "/subject/region-list",
             name: "热门商圈",

@@ -76,8 +76,8 @@ export function removeShieldedUsers(payload) {
   });
 }
 
-export function getAdmins() {
-  return request(`/api/user-admins?page=3`);
+export function getAdmins(query) {
+  return request(withQuery(`/api/user-admins`, query));
 }
 
 export function resetAdminPassword(payload) {

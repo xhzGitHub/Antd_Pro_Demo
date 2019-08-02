@@ -1,15 +1,20 @@
 import { useState, useCallback, useEffect } from 'react';
 import { ColumnProps, TableStateFilters } from 'antd/lib/table';
+import { PaginationProps, PaginationConfig } from "antd/lib/pagination";
 
 interface UseTableListOptions {
-  fetchData: (query: any) => void;
+  fetchData: (query: any) => any;
 }
 
 interface ReturnValue<T> {
   tableProps: {
     loading: boolean;
     dataSource: T[];
-    // pagination: PaginationProps;
+    pagination: PaginationProps;
+    onChange: (
+      pagination: PaginationProps,
+      filters: Record<keyof T, string[]>
+    ) => void;
   };
   getFilter: (field: string) => any | any[];
   setFilters: (filters: { [key: string]: any | any[] }) => void;
@@ -27,6 +32,7 @@ interface State<T> {
   loading: boolean;
   dataSource: T[];
   filters: TableStateFilters;
+  pagination: PaginationProps;
   // search: string;
 }
 
@@ -39,6 +45,11 @@ export default function useTableList<T = any>(options: UseTableListOptions): Ret
       loading: true,
       dataSource: [],
       filters,
+      pagination: {
+        current: 1,
+        pageSize: 15,
+        total: 1222
+      }
       // search
     };
   }, [undefined]);
@@ -55,6 +66,10 @@ export default function useTableList<T = any>(options: UseTableListOptions): Ret
   function yieldQueryFromState() {
     const { filters } = state;
     let query: any = {};
+    
+    if (state.pagination.current !== 1) {
+      query.page = state.pagination.current;
+    }
 
     if (objectCantainsValue(filters)) {
       const filtersPayload: any = {};
@@ -81,6 +96,11 @@ export default function useTableList<T = any>(options: UseTableListOptions): Ret
     const newState = { ...state, loading: false };
     if (res) {
       newState.dataSource = res.data;
+      newState.pagination = {
+        current: state.pagination.current,
+        pageSize: res.per_page,
+        total: res.total
+      };
     } else {
       newState.dataSource = [];
     }
@@ -122,6 +142,15 @@ export default function useTableList<T = any>(options: UseTableListOptions): Ret
     tableProps: {
       loading: state.loading,
       dataSource: state.dataSource,
+      pagination: state.pagination,
+      onChange: (pagination, filters) => {
+        setState({
+          ...state,
+          loading: true,
+          pagination,
+          filters: { ...state.filters, ...filters },
+        })
+      }
     },
     getColumns,
     setFilters,

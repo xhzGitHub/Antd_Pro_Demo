@@ -27,3 +27,16 @@ export function getSubjectRegionDetail(id) {
 export function getSearchRegionList(query: any) {
   return request(withQuery(`/api/subject-region/un-conf?city_id=97`, query));
 }
+
+export function getStatisticGraph() {
+  return request(`/api/subject-statistics-graph`)
+  .then(res => res.url)
+  .catch(err => {
+    console.log('fetch statisticGraph url fail', err);
+    return '';
+  })
+}
+
+export function getSubjectList(query: any) {
+   return request(withQuery(`/api/subjects`, query));
+}

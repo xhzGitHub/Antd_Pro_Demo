@@ -47,8 +47,8 @@ export default function useTableList<T = any>(options: UseTableListOptions): Ret
       filters,
       pagination: {
         current: 1,
-        pageSize: 15,
-        total: 1222
+        pageSize: 1,
+        total: 1
       }
       // search
     };
@@ -66,7 +66,7 @@ export default function useTableList<T = any>(options: UseTableListOptions): Ret
   function yieldQueryFromState() {
     const { filters } = state;
     let query: any = {};
-    
+
     if (state.pagination.current !== 1) {
       query.page = state.pagination.current;
     }
@@ -147,9 +147,12 @@ export default function useTableList<T = any>(options: UseTableListOptions): Ret
         setState({
           ...state,
           loading: true,
-          pagination,
+          pagination: { 
+            ...state.pagination,
+            current: pagination.current
+          },
           filters: { ...state.filters, ...filters },
-        })
+        });
       }
     },
     getColumns,

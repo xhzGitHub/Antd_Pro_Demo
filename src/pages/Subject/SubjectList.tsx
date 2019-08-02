@@ -2,7 +2,12 @@ import React, { Fragment, useReducer, useEffect } from 'react';
 import {
   Collapse,
   Card,
-  Table
+  Table,
+  Checkbox,
+  Input,
+  Select,
+  Button,
+  Icon
 } from 'antd';
 import useDocumentTitle from '@/hooks/useDocumentTitle';
 import useTableList from '@/hooks/useTableList';
@@ -19,6 +24,8 @@ type Action =
   | { type: 'INIT'; payload: State };
 
 const { Panel } = Collapse;
+const { Search } = Input;
+const { Option } = Select;
 
 const initialState = {
   statisticsGraphUrl: ''
@@ -63,26 +70,32 @@ export default function SubjectList() {
   const columns = [
     {
       title: "用户",
+      key: 'user',
       dataIndex: "user.user_name_display"
     },
     {
       title: "城市",
+      key: 'city_name',
       dataIndex: "city_name"
     },
     {
       title: "标题",
+      key: 'title',
       dataIndex: "title"
     },
     {
       title: "类别",
+      key: 'category_name',
       dataIndex: "category_name"
     },
     {
       title: "等级",
+      key: "level",
       dataIndex: "level"
     },
     {
       title: "创建时间",
+      key: "created_at",
       dataIndex: "created_at"
     },
     {
@@ -93,6 +106,63 @@ export default function SubjectList() {
       )
     }
   ];
+
+  const extraContent = (
+    <Fragment>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        marginBottom: '10px'
+      }}>
+        <Checkbox.Group
+          options={[
+            {
+              label: '置顶',
+              value: 'isTop'
+            },
+            {
+              label: '推荐',
+              value: 'is_featured'
+            }, 
+            {
+              label: '收录',
+              value: 'official_bookmark'
+            }
+          ]}
+        />
+        <Search
+          placeholder="搜 标题、内容、用户ID"
+          style={{ width: '200px' }}
+        />
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <Select
+          placeholder="全国圈子"
+          style={{ width: '120px' }}
+        >
+          <Option key="1">
+            拍摄圣地
+          </Option>
+        </Select>
+        <Button
+          style={{ marginLeft: '5px' }}
+        >
+          <Icon type="check" />
+        </Button>
+        <Button
+          style={{ marginLeft: '5px' }}
+        >
+          <Icon type="close" />
+        </Button>
+        <Button
+          style={{ width: '170px', marginLeft: '5px' }}
+        >
+          <Icon type="setting" />
+          设置是否显示
+        </Button>
+      </div>
+    </Fragment>
+  );
 
   const { statisticsGraphUrl } = state;
   return (
@@ -110,15 +180,13 @@ export default function SubjectList() {
           />
         </Panel>
       </Collapse>
-      <Card title="主题列表">
+      <Card
+        title="主题列表"
+        extra={extraContent}
+      >
         <Table
           rowKey="id"
           columns={ columns }
-          pagination={{
-            curren: 1,
-            pageSize: 20,
-            total: 127733
-          }}
           { ...tableProps }
         />
       </Card>

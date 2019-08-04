@@ -40,3 +40,12 @@ export function getStatisticGraph() {
 export function getSubjectList(query: any) {
    return request(withQuery(`/api/subjects`, query));
 }
+
+export function getSubjectCategories(): Subject.categories {
+  return request(`/api/subject-categories`).then(
+    categories => categories.data.map(c => ({
+      text: c.content,
+      value: String(c.id)
+    }))
+  );
+}

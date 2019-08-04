@@ -13,11 +13,14 @@ import useDocumentTitle from '@/hooks/useDocumentTitle';
 import useTableList from '@/hooks/useTableList';
 import {
   getStatisticGraph,
-  getSubjectList
+  getSubjectList,
+  getSubjectCategories
 } from '@/services/subject';
+import { SUBJECT_LEVEL } from './constants';
 
 interface State {
   statisticsGraphUrl: string;
+  categories: Subject.categories;
 }
 
 type Action =
@@ -28,7 +31,8 @@ const { Search } = Input;
 const { Option } = Select;
 
 const initialState = {
-  statisticsGraphUrl: ''
+  statisticsGraphUrl: '',
+  categories: []
 } as State;
 
 const reducer = (state: State, action: Action) => {
@@ -51,21 +55,28 @@ export default function SubjectList() {
 
   const [state, dispatch] = useReducer(reducer, initialState);
 
-
-  console.log('tableProps', tableProps);
-
   useEffect(() => {
     (async () => {
       const statisticsGraphUrl = await getStatisticGraph();
+      const categories = await getSubjectCategories();
+      
       dispatch({
         type: 'INIT',
         payload: {
-          statisticsGraphUrl
+          statisticsGraphUrl,
+          categories
         }
       })
     })()
   }, []);
 
+
+  const {
+    statisticsGraphUrl,
+    categories
+  } = state;
+
+  console.log('c', categories);
 
   const columns = [
     {
@@ -85,13 +96,15 @@ export default function SubjectList() {
     },
     {
       title: "类别",
-      key: 'category_name',
-      dataIndex: "category_name"
+      key: 'category_id',
+      dataIndex: "category_id",
+      filters: categories
     },
     {
       title: "等级",
       key: "level",
-      dataIndex: "level"
+      dataIndex: "level",
+      filters: getFiltersFromEnum(SUBJECT_LEVEL)
     },
     {
       title: "创建时间",
@@ -164,7 +177,6 @@ export default function SubjectList() {
     </Fragment>
   );
 
-  const { statisticsGraphUrl } = state;
   return (
     <Fragment>
       <Collapse style={{ border: 'none', marginBottom: '20px' }}>
@@ -193,3 +205,16 @@ export default function SubjectList() {
     </Fragment>
   )
 }
+
+function getFiltersFromEnum(enumObj) {
+  const filter = [];
+  for (const key in enumObj) {
+    if (typeof enumObj[key] === 'number') {
+      filter.push({
+        text: key,
+        value: enumObj[key]
+      })
+    }
+  }
+  return filter;
+};

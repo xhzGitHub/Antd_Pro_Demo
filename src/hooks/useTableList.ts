@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { ColumnProps, TableStateFilters } from 'antd/lib/table';
-import { PaginationProps, PaginationConfig } from "antd/lib/pagination";
+import { PaginationProps } from "antd/lib/pagination";
 
 interface UseTableListOptions {
   fetchData: (query: any) => any;

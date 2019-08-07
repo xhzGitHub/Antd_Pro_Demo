@@ -49,3 +49,16 @@ export function getSubjectCategories(): Subject.categories {
     }))
   );
 }
+
+export function getNationalCommunities() {
+   return request(`/api/national-community-categories`).then(
+    categories => categories.data.map(c => {
+      if (c.is_show) {
+        return {
+          text: c.content,
+          value: String(c.id)
+        }
+      }
+    })
+   );
+}

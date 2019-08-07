@@ -14,17 +14,28 @@ import useTableList from '@/hooks/useTableList';
 import {
   getStatisticGraph,
   getSubjectList,
-  getSubjectCategories
+  getSubjectCategories,
+  getNationalCommunities
 } from '@/services/subject';
 import { SUBJECT_LEVEL } from './constants';
 
 interface State {
   statisticsGraphUrl: string;
   categories: Subject.categories;
+  communityCategories: Subject.categories;
+  nationalCategoryFilters: Subject.categories;
 }
 
 type Action =
-  | { type: 'INIT'; payload: State };
+  | { type: 'INIT';
+      payload: Pick<
+        State, 
+        |"categories"
+        |"communityCategories"
+        |"statisticsGraphUrl"
+      >
+    }
+  | { type: 'SET_NATIONAL_CATEGORY'; payload: State["nationalCategoryFilters"] };
 
 const { Panel } = Collapse;
 const { Search } = Input;
@@ -32,7 +43,9 @@ const { Option } = Select;
 
 const initialState = {
   statisticsGraphUrl: '',
-  categories: []
+  categories: [],
+  communityCategories: [],
+  nationalCategoryFilters: []
 } as State;
 
 const reducer = (state: State, action: Action) => {
@@ -42,6 +55,11 @@ const reducer = (state: State, action: Action) => {
         ...state,
         ...action.payload
       };
+    case 'SET_NATIONAL_CATEGORY':
+      return {
+        ...state,
+        nationalCategoryFilters: action.payload
+      }
     default:
       return state;
   }
@@ -49,7 +67,7 @@ const reducer = (state: State, action: Action) => {
 
 export default function SubjectList() {
   useDocumentTitle('主题列表');
-  const { tableProps } = useTableList({
+  const { tableProps, setFilters, getFilter } = useTableList({
     fetchData: getSubjectList
   });
 
@@ -59,24 +77,25 @@ export default function SubjectList() {
     (async () => {
       const statisticsGraphUrl = await getStatisticGraph();
       const categories = await getSubjectCategories();
-      
+      const communityCategories = await getNationalCommunities();
+
       dispatch({
         type: 'INIT',
         payload: {
           statisticsGraphUrl,
-          categories
+          categories,
+          communityCategories
         }
       })
     })()
   }, []);
 
-
   const {
     statisticsGraphUrl,
-    categories
+    categories,
+    communityCategories,
+    nationalCategoryFilters
   } = state;
-
-  console.log('c', categories);
 
   const columns = [
     {
@@ -127,22 +146,30 @@ export default function SubjectList() {
         alignItems: 'center',
         marginBottom: '10px'
       }}>
-        <Checkbox.Group
-          options={[
-            {
-              label: '置顶',
-              value: 'isTop'
-            },
-            {
-              label: '推荐',
-              value: 'is_featured'
-            }, 
-            {
-              label: '收录',
-              value: 'official_bookmark'
-            }
-          ]}
-        />
+        <Checkbox
+          value={getFilter('isTop')}
+          onChange={e => {
+            setFilters({ isTop: e.target.checked ? 1 : 0 })
+          }}
+        >
+          置顶
+        </Checkbox>
+        <Checkbox
+          value={getFilter('is_featured')}
+          onChange={e => {
+            setFilters({ is_featured: e.target.checked ? 1 : 0 })
+          }}
+        >
+          推荐
+        </Checkbox>
+        <Checkbox
+          value={getFilter('official_bookmark')}
+          onChange={e => {
+            setFilters({ official_bookmark: e.target.checked ? 1 : 0 })
+          }}
+        >
+          收录
+        </Checkbox>
         <Search
           placeholder="搜 标题、内容、用户ID"
           style={{ width: '200px' }}
@@ -151,14 +178,26 @@ export default function SubjectList() {
       <div style={{ display: 'flex', alignItems: 'center' }}>
         <Select
           placeholder="全国圈子"
+          mode="multiple"
           style={{ width: '120px' }}
+          onChange={ (val: State["nationalCategoryFilters"]) => {
+            dispatch({
+              type: "SET_NATIONAL_CATEGORY",
+              payload: val
+            }) }
+          }
         >
-          <Option key="1">
-            拍摄圣地
-          </Option>
+          {communityCategories.map(c => (
+            <Option key={ c.value }>
+              { c.text }
+            </Option>
+          ))}
         </Select>
         <Button
           style={{ marginLeft: '5px' }}
+          onClick={ () => {
+            setFilters({ national_category_ids: nationalCategoryFilters })
+          } }
         >
           <Icon type="check" />
         </Button>

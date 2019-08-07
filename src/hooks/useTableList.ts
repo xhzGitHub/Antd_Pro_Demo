@@ -117,7 +117,11 @@ export default function useTableList<T = any>(options: UseTableListOptions): Ret
   const setFilters: ReturnValue<T>['setFilters'] = filters => {
     const filtersResult = {};
     Object.keys(filters).forEach(key => {
-      filtersResult[key] = [filters[key]];
+      if (Array.isArray(filters[key])) {
+        filtersResult[key] = filters[key];
+      } else {
+        filtersResult[key] = [filters[key]];
+      }
     });
     setState({
       ...state,
@@ -134,7 +138,6 @@ export default function useTableList<T = any>(options: UseTableListOptions): Ret
       }
       return state.filters[field][0];
     }
-    console.log('getFilter: ', state);
     return undefined;
   };
 

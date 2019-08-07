@@ -1,8 +1,22 @@
 declare namespace Subject {
-  interface category {
+  interface Category {
     text: string;
     value: string;
   }
 
-  type categories = category[];
+  type Categories = Category[];
+
+  interface NationalCategory {
+    id: number;
+    content: string;
+    is_show: 0 | 1;
+  }
+
+  type NationalCategories = NationalCategory[];
+
+  interface ReviewStats<T> {
+    all: T;
+    today: T;
+    yesterday: T;
+  }
 }

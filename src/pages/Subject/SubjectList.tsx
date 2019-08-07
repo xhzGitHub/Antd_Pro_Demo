@@ -1,4 +1,4 @@
-import React, { Fragment, useState, useReducer, useContext, useEffect, useCallback } from "react";
+import React, { Fragment, useState, useReducer, useContext, useEffect, useCallback } from 'react';
 import {
   Collapse,
   Card,
@@ -13,9 +13,9 @@ import {
   Row,
   Col,
   Switch
-} from "antd";
-import useDocumentTitle from "@/hooks/useDocumentTitle";
-import useTableList from "@/hooks/useTableList";
+} from 'antd';
+import useDocumentTitle from '@/hooks/useDocumentTitle';
+import useTableList from '@/hooks/useTableList';
 import {
   getStatisticGraph,
   getSubjectList,
@@ -23,8 +23,8 @@ import {
   getNationalCommunities,
   getReviewStats,
   setNationalCommunities
-} from "@/services/subject";
-import { SUBJECT_LEVEL } from "./constants";
+} from '@/services/subject';
+import { SUBJECT_LEVEL } from './constants';
 
 interface State {
   statisticsGraphUrl: string;
@@ -45,7 +45,7 @@ const { Search } = Input;
 const { Option } = Select;
 
 const initialState = {
-  statisticsGraphUrl: "",
+  statisticsGraphUrl: '',
   categories: [],
   communityCategories: [],
   nationalCategoryFilters: [],
@@ -55,22 +55,22 @@ const initialState = {
 
 type Action =
   | {
-      type: "INIT";
+      type: 'INIT';
       payload: Pick<
         State,
-        "categories" | "communityCategories" | "statisticsGraphUrl" | "reviewStats"
+        'categories' | 'communityCategories' | 'statisticsGraphUrl' | 'reviewStats'
       >;
     }
-  | { type: "SET_STATE"; payload: Partial<State> };
+  | { type: 'SET_STATE'; payload: Partial<State> };
 
 const reducer = (state: State, action: Action) => {
   switch (action.type) {
-    case "INIT":
+    case 'INIT':
       return {
         ...state,
         ...action.payload
       };
-    case "SET_STATE":
+    case 'SET_STATE':
       return {
         ...state,
         ...action.payload
@@ -83,7 +83,7 @@ const reducer = (state: State, action: Action) => {
 const nationalCategoryContext = React.createContext({} as Context);
 
 export default function SubjectList() {
-  useDocumentTitle("主题列表");
+  useDocumentTitle('主题列表');
   const { tableProps, setFilters, getFilter } = useTableList({
     fetchData: getSubjectList
   });
@@ -98,7 +98,7 @@ export default function SubjectList() {
       const reviewStats = await getReviewStats();
 
       dispatch({
-        type: "INIT",
+        type: 'INIT',
         payload: {
           statisticsGraphUrl,
           categories,
@@ -120,40 +120,40 @@ export default function SubjectList() {
 
   const columns = [
     {
-      title: "用户",
-      key: "user",
-      dataIndex: "user.user_name_display"
+      title: '用户',
+      key: 'user',
+      dataIndex: 'user.user_name_display'
     },
     {
-      title: "城市",
-      key: "city_name",
-      dataIndex: "city_name"
+      title: '城市',
+      key: 'city_name',
+      dataIndex: 'city_name'
     },
     {
-      title: "标题",
-      key: "title",
-      dataIndex: "title"
+      title: '标题',
+      key: 'title',
+      dataIndex: 'title'
     },
     {
-      title: "类别",
-      key: "category_id",
-      dataIndex: "category_id",
+      title: '类别',
+      key: 'category_id',
+      dataIndex: 'category_id',
       filters: categories
     },
     {
-      title: "等级",
-      key: "level",
-      dataIndex: "level",
+      title: '等级',
+      key: 'level',
+      dataIndex: 'level',
       filters: getFiltersFromEnum(SUBJECT_LEVEL)
     },
     {
-      title: "创建时间",
-      key: "created_at",
-      dataIndex: "created_at"
+      title: '创建时间',
+      key: 'created_at',
+      dataIndex: 'created_at'
     },
     {
-      title: "操作",
-      dataIndex: "operator",
+      title: '操作',
+      dataIndex: 'operator',
       render: () => <a href="#">查看</a>
     }
   ];
@@ -162,13 +162,13 @@ export default function SubjectList() {
     <Fragment>
       <div
         style={{
-          display: "flex",
-          alignItems: "center",
-          marginBottom: "10px"
+          display: 'flex',
+          alignItems: 'center',
+          marginBottom: '10px'
         }}
       >
         <Checkbox
-          value={getFilter("isTop")}
+          value={getFilter('isTop')}
           onChange={e => {
             setFilters({ isTop: e.target.checked ? 1 : 0 });
           }}
@@ -176,7 +176,7 @@ export default function SubjectList() {
           置顶
         </Checkbox>
         <Checkbox
-          value={getFilter("is_featured")}
+          value={getFilter('is_featured')}
           onChange={e => {
             setFilters({ is_featured: e.target.checked ? 1 : 0 });
           }}
@@ -184,23 +184,23 @@ export default function SubjectList() {
           推荐
         </Checkbox>
         <Checkbox
-          value={getFilter("official_bookmark")}
+          value={getFilter('official_bookmark')}
           onChange={e => {
             setFilters({ official_bookmark: e.target.checked ? 1 : 0 });
           }}
         >
           收录
         </Checkbox>
-        <Search placeholder="搜 标题、内容、用户ID" style={{ width: "200px" }} />
+        <Search placeholder="搜 标题、内容、用户ID" style={{ width: '200px' }} />
       </div>
-      <div style={{ display: "flex", alignItems: "center" }}>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
         <Select
           placeholder="全国圈子"
           mode="multiple"
-          style={{ width: "120px" }}
-          onChange={(val: State["nationalCategoryFilters"]) => {
+          style={{ width: '120px' }}
+          onChange={(val: State['nationalCategoryFilters']) => {
             dispatch({
-              type: "SET_STATE",
+              type: 'SET_STATE',
               payload: { nationalCategoryFilters: val }
             });
           }}
@@ -210,14 +210,14 @@ export default function SubjectList() {
           ))}
         </Select>
         <Button
-          style={{ marginLeft: "5px" }}
+          style={{ marginLeft: '5px' }}
           onClick={() => {
             setFilters({ national_category_ids: nationalCategoryFilters });
           }}
         >
           <Icon type="check" />
         </Button>
-        <Button style={{ marginLeft: "5px" }}>
+        <Button style={{ marginLeft: '5px' }}>
           <Icon type="close" />
         </Button>
         <Popover
@@ -229,10 +229,10 @@ export default function SubjectList() {
           }
         >
           <Button
-            style={{ width: "170px", marginLeft: "5px" }}
+            style={{ width: '170px', marginLeft: '5px' }}
             onClick={() =>
               dispatch({
-                type: "SET_STATE",
+                type: 'SET_STATE',
                 payload: { isShowPopover: true }
               })
             }
@@ -247,7 +247,7 @@ export default function SubjectList() {
 
   const tableTitle = useCallback(() => {
     return (
-      <div style={{ display: "flex", justifyContent: "space-around", textAlign: "center" }}>
+      <div style={{ display: 'flex', justifyContent: 'space-around', textAlign: 'center' }}>
         <Statistic title="今日未分类文章数" value={reviewStats.today} />
         <Statistic title="昨日未分类文章数" value={reviewStats.yesterday} />
         <Statistic title="所有未分类文章数" value={reviewStats.all} />
@@ -257,14 +257,14 @@ export default function SubjectList() {
 
   return (
     <Fragment>
-      <Collapse style={{ border: "none", margin: "40px 0" }}>
+      <Collapse style={{ border: 'none', margin: '40px 0' }}>
         <Panel
           key="1"
           header="文章统计 - 阿里云实施列表"
-          style={{ fontWeight: 500, fontSize: "1.17em" }}
+          style={{ fontWeight: 500, fontSize: '1.17em' }}
         >
           <iframe
-            style={{ width: "100%", height: 500, border: "none" }}
+            style={{ width: '100%', height: 500, border: 'none' }}
             src={statisticsGraphUrl}
             allow="fullscreen"
           />
@@ -280,7 +280,7 @@ export default function SubjectList() {
 function getFiltersFromEnum(enumObj) {
   const filter = [];
   for (const key in enumObj) {
-    if (typeof enumObj[key] === "number") {
+    if (typeof enumObj[key] === 'number') {
       filter.push({
         text: key,
         value: enumObj[key]
@@ -305,13 +305,13 @@ function NationalCategoriesForm() {
           </div>
         }
       >
-        <Row style={{ textAlign: "center" }}>
+        <Row style={{ textAlign: 'center' }}>
           <Col span={8}>序号</Col>
           <Col span={8}>标签</Col>
           <Col span={8}>操作</Col>
         </Row>
         {formData.map((n, index) => (
-          <Row key={n.id} style={{ textAlign: "center", margin: "10px 0" }} gutter={24}>
+          <Row key={n.id} style={{ textAlign: 'center', margin: '10px 0' }} gutter={24}>
             <Col span={8}>{index}</Col>
             <Col span={8}>{n.content}</Col>
             <Col span={8}>
@@ -332,15 +332,15 @@ function NationalCategoriesForm() {
             </Col>
           </Row>
         ))}
-        <div style={{ marginTop: "20px", textAlign: "center" }}>
+        <div style={{ marginTop: '20px', textAlign: 'center' }}>
           <Button
             type="primary"
-            style={{ marginRight: "10px" }}
+            style={{ marginRight: '10px' }}
             onClick={async () => {
               const res = await setNationalCommunities(formData);
               if (res.errcode === 0) {
                 dispatch({
-                  type: "SET_STATE",
+                  type: 'SET_STATE',
                   payload: {
                     isShowPopover: false,
                     communityCategories: formData
@@ -354,7 +354,7 @@ function NationalCategoriesForm() {
           <Button
             onClick={() => {
               dispatch({
-                type: "SET_STATE",
+                type: 'SET_STATE',
                 payload: { isShowPopover: false }
               });
             }}

@@ -64,3 +64,7 @@ export function setNationalCommunities(payload: Subject.NationalCategories) {
 export function getReviewStats() {
   return request(`/api/subject-review-stats`);
 }
+
+export function getSubjectDetail(alias) {
+  return request(`/api/subjects/${alias}`);
+}

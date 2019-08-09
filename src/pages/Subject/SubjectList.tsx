@@ -25,6 +25,8 @@ import {
   setNationalCommunities
 } from "@/services/subject";
 import { SUBJECT_LEVEL } from "./constants";
+import { getUrl } from "@/utils/routes";
+import Link from "umi/link";
 
 interface State {
   statisticsGraphUrl: string;
@@ -154,9 +156,12 @@ export default function SubjectList() {
     {
       title: "操作",
       dataIndex: "operator",
-      render: () => <a href="#">查看</a>
+      render: (_, record) => <Link to={getUrl("subject-detail", record.alias)}>查看</Link>
+      // render: () => <a>查看</a>
     }
   ];
+
+  var a = 1;
 
   const extraContent = (
     <Fragment>

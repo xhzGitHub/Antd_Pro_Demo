@@ -1,5 +1,12 @@
-import React, { useEffect, useReducer } from "react";
-import { Row, Col, Card } from "antd";
+import React, {
+  useEffect,
+  useReducer
+} from "react";
+import { 
+  Row,
+  Col,
+  Card
+} from "antd";
 import { getSubjectDetail } from "@/services/subject";
 
 interface State {
